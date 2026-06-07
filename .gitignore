@@ -1,0 +1,48 @@
+# Dependencias
+node_modules/
+.pnp
+.pnp.js
+
+# Variables de entorno — NUNCA subir
+.env
+.env.local
+.env.*.local
+
+# Build / dist
+dist/
+build/
+.vite/
+
+# Uploads y archivos generados en producción
+backend/uploads/
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editores e IDEs
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# Claude Code
+.claude/
+
+# Notas privadas y apuntes de desarrollo — no van al repo
+NOTAS_DEV.md
+PLAN_CLAUDECODE_FACILFACTURA.md
+notas.txt
+Nota para tarea.md
+"Nota para tarea.md"
+Descripcion del proyecto.md
+"Descripcion del proyecto.md"
+Presupuesto academico - detalle tecnico.md
+"Presupuesto academico - detalle tecnico.md"
+
+# Patrón general para futuras notas
+NOTAS*.md
+APUNTES*.md
