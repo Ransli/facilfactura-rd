@@ -1,0 +1,639 @@
+/* ======== CONTENEDOR PRINCIPAL ======== */
+.factura-main {
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 3px 20px #1e41661c;
+  padding: 34px 28px 26px 28px;
+  width: 100%;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* ======== ENCABEZADO ======== */
+.factura-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  border-bottom: 2px solid #e5e9f0;
+  padding-bottom: 18px;
+  margin-bottom: 18px;
+  gap: 0;
+}
+
+.factura-logo {
+  width: 90px;
+  height: auto;
+}
+
+.factura-titulo {
+  flex: 1;
+  text-align: right;
+  margin-top: 8px;
+}
+
+.factura-titulo h1 {
+  font-size: 2.7em;
+  font-weight: 400;
+  letter-spacing: 1.2px;
+  margin: 0;
+  color: #17406d;
+}
+
+.factura-no {
+  color: #757575;
+  font-size: 1.1em;
+  margin-top: 6px;
+}
+
+/* ======== COLUMNAS DE INFORMACIÓN ======== */
+.factura-infos-row {
+  display: flex;
+  gap: 28px;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+  width: 100%;
+}
+
+.factura-info-col {
+  flex: 1 1 220px;
+  min-width: 200px;
+  max-width: 350px;
+}
+
+.factura-info-fecha {
+  min-width: 200px;
+  max-width: 290px;
+}
+
+.info-block {
+  margin-bottom: 13px;
+}
+
+.info-label {
+  color: #9d9d9d;
+  font-size: 1em;
+  margin-bottom: 1px;
+}
+
+.info-value {
+  color: #212121;
+  font-size: 1.1em;
+  font-weight: 500;
+  margin-bottom: 3px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* ======== BOTÓN MINI ======== */
+.btn-mini {
+  font-size: 0.82em;
+  padding: 2px 10px 2px 8px;
+  background: #eef3fb;
+  border: 1px solid #d0dff0;
+  border-radius: 6px;
+  color: #25336c;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.btn-mini:hover {
+  background: #d8e8fb;
+}
+
+.btn-mini i {
+  margin-right: 3px;
+}
+
+/* ======== SALDO TOTAL ======== */
+.factura-saldo-total-row {
+  display: flex;
+  justify-content: flex-end;
+  margin: 14px 0 22px 0;
+}
+
+.factura-saldo-total {
+  background: #f0f6ff;
+  border-radius: 10px;
+  padding: 12px 28px 12px 24px;
+  font-size: 1.22em;
+  font-weight: 600;
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  border: 1px solid #d6e8ff;
+}
+
+.saldo-label {
+  color: #505050;
+}
+
+.saldo-valor {
+  color: #17406d;
+  font-size: 1.12em;
+  font-weight: 700;
+}
+
+/* ======== BOTONES DE ACCIÓN ======== */
+.factura-botones {
+  display: flex;
+  gap: 9px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.btn-factura {
+  background: #17406d;
+  color: #fff;
+  border: none;
+  padding: 10px 17px;
+  border-radius: 8px;
+  font-size: 0.97rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.18s;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  box-shadow: 0 1px 4px #193d6614;
+}
+
+.btn-factura:hover {
+  background: #1555a5;
+}
+
+.btn-factura.btn-danger {
+  background: #9b2323;
+}
+
+.btn-factura.btn-danger:hover {
+  background: #c0392b;
+}
+
+.btn-factura i {
+  font-size: 1.05em;
+}
+
+/* ======== TABLA ======== */
+.factura-tabla {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin-bottom: 4px;
+}
+
+.factura-tabla table {
+  width: 100%;
+  min-width: 620px;
+  border-collapse: collapse;
+}
+
+.factura-tabla th {
+  background: #444;
+  color: #fff;
+  font-weight: 500;
+  font-size: 1.02rem;
+  padding: 11px 8px;
+  text-align: left;
+}
+
+.factura-tabla td {
+  border-bottom: 1px solid #e5e9f0;
+  padding: 10px 8px;
+  font-size: 1rem;
+  vertical-align: middle;
+  background: #fff;
+}
+
+.factura-tabla .col-cant,
+.factura-tabla .col-tasa,
+.factura-tabla .col-total {
+  text-align: right;
+}
+
+.factura-tabla .col-accion {
+  text-align: center;
+  width: 54px;
+}
+
+.factura-tabla tr.categoria-row > td {
+  font-weight: bold;
+  color: #222;
+  font-size: 1.08em;
+  background: #fafbfc;
+  padding-top: 14px;
+  border-top: 2px solid #c8c8c8;
+}
+
+.factura-tabla .col-cat-total,
+.factura-tabla .col-cat-cant { display: none; }
+
+.factura-tabla tr.producto-row > td {
+  color: #444;
+  font-size: 1em;
+  padding-top: 6px;
+}
+
+.factura-tabla td.descripcion-detalle {
+  color: #666;
+  font-size: 0.97em;
+  padding-left: 14px;
+}
+
+.tabla-vacia {
+  text-align: center;
+  color: #bbb;
+  padding: 36px !important;
+  font-size: 0.97rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.tabla-vacia i {
+  font-size: 2rem;
+  display: block;
+  margin-bottom: 6px;
+}
+
+/* ======== BOTÓN ELIMINAR PRODUCTO ======== */
+.btn-eliminar-prod {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #b22;
+  font-size: 1.15em;
+  padding: 4px 6px;
+  border-radius: 5px;
+  transition: color 0.15s, background 0.15s;
+}
+
+.btn-eliminar-prod:hover {
+  color: #e44;
+  background: #fff0f0;
+}
+
+/* ======== TOTALES ======== */
+.factura-totales {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-top: 24px;
+  gap: 40px;
+  flex-wrap: wrap;
+}
+
+.factura-totales-numeros {
+  min-width: 270px;
+}
+
+.total-fila {
+  display: flex;
+  justify-content: space-between;
+  gap: 40px;
+  padding: 4px 0;
+  font-size: 1rem;
+  color: #333;
+}
+
+.total-fila span:first-child {
+  min-width: 180px;
+}
+
+.total-pagar {
+  font-size: 1.13rem;
+  font-weight: 700;
+  color: #17406d;
+  margin-top: 10px;
+  border-top: 2px solid #e0e8f0;
+  padding-top: 8px;
+}
+
+.factura-metodo-pago {
+  background: #f4f8fa;
+  padding: 14px 18px;
+  border-radius: 9px;
+  font-size: 0.97rem;
+  line-height: 1.7;
+  min-width: 200px;
+  border: 1px solid #e0ecf7;
+}
+
+/* ======== MODALES ======== */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1500;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(22, 38, 60, 0.28);
+  justify-content: center;
+  align-items: center;
+}
+
+.modal.abierto {
+  display: flex;
+}
+
+.modal-contenido {
+  background: #fff;
+  border-radius: 16px;
+  padding: 28px 24px 22px 24px;
+  width: 380px;
+  max-width: 95vw;
+  box-shadow: 0 8px 40px #12245540;
+  position: relative;
+}
+
+.modal-productos-wide {
+  width: 500px;
+}
+
+.modal-contenido h3 {
+  margin: 0 0 14px 0;
+  color: #17406d;
+  font-size: 1.18rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.checkbox-custom {
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  border-radius: 5px;
+  border: 2px solid #b0c8e8;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.72rem;
+  color: #fff;
+  transition: background 0.15s, border-color 0.15s;
+  cursor: pointer;
+}
+
+.checkbox-custom.marcado {
+  background: #17406d;
+  border-color: #17406d;
+}
+
+.lista-clientes-modal {
+  max-height: 320px;
+  overflow-y: auto;
+  margin-bottom: 16px;
+}
+
+.producto-opcion {
+  display: flex;
+  align-items: center;
+  padding: 10px 11px;
+  border-radius: 8px;
+  background: #f5f8fc;
+  margin: 6px 0;
+  gap: 10px;
+  border: 1.5px solid #e8eef5;
+  transition: background 0.12s, border-color 0.12s;
+  cursor: pointer;
+}
+
+.producto-opcion:hover {
+  background: #eaf3ff;
+  border-color: #c0dcf7;
+}
+
+.producto-opcion.seleccionado {
+  background: #e8f4ff;
+  border-color: #55b6ff;
+}
+
+.producto-opcion-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.producto-opcion-info strong {
+  font-size: 1.02em;
+  color: #1a2d4a;
+}
+
+.producto-categoria {
+  font-size: 0.87em;
+  color: #7a96b0;
+}
+
+.producto-precio {
+  font-size: 0.91em;
+  color: #1a5fa8;
+  font-weight: 600;
+}
+
+.cliente-opcion {
+  background: #f7f7f9;
+  border-radius: 8px;
+  padding: 11px 13px;
+  margin: 7px 0;
+  cursor: pointer;
+  border: 1.5px solid #ebebf0;
+  transition: background 0.12s, border-color 0.12s;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.cliente-opcion strong {
+  font-size: 1.05em;
+  color: #1a2d4a;
+}
+
+.cliente-opcion span {
+  font-size: 0.92em;
+  color: #667;
+}
+
+.cliente-opcion:hover {
+  background: #e3f2fd;
+  border-color: #b6e3ff;
+}
+
+.modal-botones {
+  text-align: center;
+  margin-top: 10px;
+}
+
+.modal-botones-multi {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  text-align: left;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid #edf1f7;
+}
+
+.btn-factura:disabled {
+  background: #a0b4c8;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.btn-factura.btn-wsp {
+  background: #25d366;
+  text-decoration: none;
+}
+
+.btn-factura.btn-wsp:hover {
+  background: #1aad52;
+}
+
+.btn-secundario {
+  background: #5a6e82;
+}
+
+.btn-secundario:hover {
+  background: #3d5166;
+}
+
+/* ======== IMPRESIÓN ======== */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  .factura-main,
+  .factura-main * {
+    visibility: visible;
+  }
+
+  .factura-main {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    padding: 0;
+    margin: 0;
+    box-shadow: none;
+    border-radius: 0;
+  }
+
+  .factura-botones,
+  .btn-eliminar-prod,
+  .btn-mini {
+    display: none !important;
+  }
+
+  .factura-tabla th {
+    background: #333 !important;
+    color: #fff !important;
+  }
+
+  .factura-tabla td {
+    background: #fff !important;
+    color: #111 !important;
+  }
+
+  .factura-metodo-pago {
+    display: block !important;
+  }
+}
+
+/* ======== RESPONSIVE ======== */
+@media (max-width: 900px) {
+  .factura-main {
+    padding: 16px 8px;
+  }
+
+  .factura-totales {
+    flex-direction: column;
+    gap: 14px;
+  }
+}
+
+@media (max-width: 768px) {
+  .factura-titulo h1 {
+    font-size: 1.9em;
+  }
+
+  .btn-factura {
+    font-size: 0.85rem;
+    padding: 8px 11px;
+  }
+
+  .factura-saldo-total {
+    font-size: 1rem;
+    padding: 8px 14px;
+  }
+}
+
+@media (max-width: 640px) {
+  .factura-tabla { overflow-x: visible; }
+  .factura-tabla table { min-width: unset; }
+  .factura-tabla thead { display: none; }
+  .factura-tabla tbody tr { display: block; }
+
+  .factura-tabla tr.categoria-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f0f4f8;
+    border-top: 2px solid #c8d4e0;
+    border-radius: 6px 6px 0 0;
+    padding: 8px 12px;
+    margin-top: 14px;
+  }
+
+  .factura-tabla tr.categoria-row td { display: none; }
+  .factura-tabla tr.categoria-row td:first-child { display: block; }
+  .factura-tabla tr.categoria-row .col-cat-total { display: block; color: #17406d; font-weight: 700; }
+  .factura-tabla tr.categoria-row .col-cat-hide  { display: none !important; }
+
+  .factura-tabla tr.producto-row {
+    background: #fff;
+    border: 1px solid #e0eaf5;
+    border-top: none;
+    padding: 8px 12px;
+    margin-bottom: 2px;
+  }
+
+  .factura-tabla tr.producto-row td {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 4px 0;
+    border-bottom: 1px solid #f0f4f8;
+    font-size: 0.93rem;
+  }
+
+  .factura-tabla tr.producto-row td:last-child { border-bottom: none; }
+
+  .factura-tabla tr.producto-row td[data-label]::before {
+    content: attr(data-label);
+    font-size: 0.78rem;
+    color: #778;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    margin-right: 8px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .factura-tabla tr.producto-row .col-prod-hide { display: none; }
+
+  .factura-tabla tr.producto-row .col-accion {
+    justify-content: flex-end;
+    border-bottom: none;
+    padding-top: 6px;
+  }
+  .factura-tabla tr.producto-row .col-accion::before { display: none; }
+
+  .factura-totales-numeros { min-width: unset; width: 100%; }
+  .total-fila span:first-child { min-width: unset; }
+}
