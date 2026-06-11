@@ -4,6 +4,7 @@ import dotenv from 'dotenv'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import { testConnection } from './config/database.js'
+import authRoutes from './routes/auth.js'
 
 dotenv.config()
 
@@ -23,6 +24,9 @@ app.use(express.urlencoded({ extended: true }))
 
 // Archivos estáticos: logos subidos
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')))
+
+// ── Rutas ─────────────────────────────────────────────────────
+app.use('/api/auth', authRoutes)
 
 // ── Health check ──────────────────────────────────────────────
 app.get('/api/health', (_req, res) => {
