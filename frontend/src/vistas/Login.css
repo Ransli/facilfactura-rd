@@ -1,0 +1,160 @@
+/* ======== FONDO ======== */
+.login-fondo {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #0f2847 0%, #17406d 60%, #1a5490 100%);
+  padding: 20px;
+}
+
+/* ======== CARD ======== */
+.login-card {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 8px 40px #00000044;
+  padding: 44px 40px 36px;
+  width: 100%;
+  max-width: 420px;
+}
+
+/* ======== LOGO ======== */
+.login-logo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 32px;
+}
+
+.login-logo img {
+  width: 64px;
+  height: 64px;
+}
+
+.login-logo h1 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #17406d;
+  text-align: center;
+}
+
+/* ======== FORM ======== */
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.login-campo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.login-campo label {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #445;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.login-campo label i {
+  color: #17406d;
+  font-size: 0.85rem;
+}
+
+.login-campo input {
+  padding: 11px 14px;
+  border: 1.5px solid #d0d8e4;
+  border-radius: 8px;
+  font-size: 0.97rem;
+  outline: none;
+  transition: border 0.15s;
+  background: #f8fafc;
+}
+
+.login-campo input:focus {
+  border-color: #17406d;
+  background: #fff;
+}
+
+/* ======== INPUT CONTRASEÑA ======== */
+.login-input-pass {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.login-input-pass input {
+  width: 100%;
+  padding-right: 42px;
+}
+
+.login-ver-pass {
+  position: absolute;
+  right: 10px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #7a8a9a;
+  font-size: 0.95rem;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  transition: color 0.15s;
+}
+
+.login-ver-pass:hover {
+  color: #17406d;
+}
+
+/* ======== ERROR ======== */
+.login-error {
+  background: #fff0f0;
+  border: 1px solid #f5c6c6;
+  color: #c0392b;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ======== BOTÓN ======== */
+.login-btn {
+  background: #17406d;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 13px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background 0.15s;
+  margin-top: 4px;
+}
+
+.login-btn:hover:not(:disabled) {
+  background: #1a5490;
+}
+
+.login-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* ======== RESPONSIVE ======== */
+@media (max-width: 480px) {
+  .login-card {
+    padding: 32px 22px 28px;
+  }
+}

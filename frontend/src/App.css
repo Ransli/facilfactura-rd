@@ -1,0 +1,273 @@
+/* ======== RESET Y BASE ======== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: #f5f7fa;
+}
+
+/* ======== LAYOUT PRINCIPAL ======== */
+.contenedor-app {
+  display: flex;
+  flex-direction: row;
+  height: 100vh;
+  overflow: hidden;
+  position: relative;
+}
+
+/* ======== MENÚ LATERAL ======== */
+.menu-lateral {
+  background: #17406d;
+  color: #fff;
+  width: 240px;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  z-index: 1000;
+  flex-shrink: 0;
+  overflow-y: auto;
+}
+
+.logo-menu {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 30px 18px 25px 24px;
+  font-size: 1.15rem;
+  font-weight: 600;
+}
+
+.logo-menu img {
+  width: 40px;
+  height: 40px;
+}
+
+.menu-lateral ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.menu-lateral .item-menu {
+  padding: 15px 24px;
+  font-size: 1.08rem;
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  cursor: pointer;
+  transition: background 0.12s;
+  border-left: 4px solid transparent;
+  color: #e7e7e7;
+  font-weight: 500;
+  user-select: none;
+}
+
+.menu-lateral .item-menu i {
+  font-size: 1.28rem;
+  width: 26px;
+  min-width: 26px;
+  text-align: center;
+  color: #85d7ff;
+  transition: color 0.2s;
+}
+
+.menu-lateral .item-menu.activo,
+.menu-lateral .item-menu:hover {
+  background: #193d66;
+  border-left: 4px solid #55b6ff;
+  color: #fff;
+}
+
+.menu-lateral .item-menu.activo i,
+.menu-lateral .item-menu:hover i {
+  color: #fff;
+}
+
+/* ======== CONTENIDO PRINCIPAL ======== */
+.contenido-principal {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+  min-width: 0;
+}
+
+/* ======== BARRA SUPERIOR MÓVIL ======== */
+.topbar-movil {
+  display: none;
+  align-items: center;
+  gap: 14px;
+  background: #17406d;
+  color: #fff;
+  padding: 0 18px;
+  height: 54px;
+  flex-shrink: 0;
+  z-index: 100;
+}
+
+.topbar-nombre {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ======== BOTÓN HAMBURGUESA ======== */
+.boton-menu {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 1.3rem;
+  cursor: pointer;
+  padding: 6px 8px;
+  border-radius: 6px;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+
+.boton-menu:hover { background: #ffffff22; }
+
+/* ======== CONTENEDOR DE VISTAS ======== */
+#contenedor-vista {
+  flex: 1;
+  padding: 35px 40px;
+  background: #f5f7fa;
+  overflow-y: auto;
+}
+
+/* ======== VISTA PLACEHOLDER ======== */
+.vista-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
+  color: #aaa;
+  gap: 14px;
+}
+
+.vista-placeholder i {
+  font-size: 3.5rem;
+  color: #c8d8ea;
+}
+
+.vista-placeholder h2 {
+  margin: 0;
+  font-size: 1.4rem;
+  color: #b0bec5;
+  font-weight: 500;
+}
+
+.vista-placeholder p {
+  margin: 0;
+  font-size: 0.97rem;
+}
+
+/* ======== USUARIO EN MENÚ ======== */
+.menu-usuario {
+  margin-top: auto;
+  padding: 14px 16px;
+  border-top: 1px solid #1e4f80;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.menu-usuario-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  overflow: hidden;
+}
+
+.menu-usuario-info > i {
+  font-size: 1.7rem;
+  color: #85d7ff;
+  flex-shrink: 0;
+}
+
+.menu-usuario-info > div {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.menu-usuario-nombre {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.menu-usuario-rol {
+  font-size: 0.75rem;
+  color: #85d7ff;
+  text-transform: capitalize;
+}
+
+.menu-logout {
+  background: none;
+  border: none;
+  color: #85d7ff;
+  cursor: pointer;
+  font-size: 1.1rem;
+  padding: 6px 8px;
+  border-radius: 6px;
+  transition: background 0.15s, color 0.15s;
+  flex-shrink: 0;
+}
+
+.menu-logout:hover {
+  background: #c0392b22;
+  color: #ff6b6b;
+}
+
+/* ======== RESPONSIVE ======== */
+@media (max-width: 1024px) {
+  .menu-lateral {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    overflow-y: auto;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    z-index: 1000;
+  }
+
+  .menu-lateral.activo {
+    transform: translateX(0);
+    box-shadow: 4px 0 24px #00000033;
+  }
+
+  .topbar-movil {
+    display: flex;
+  }
+
+  #contenedor-vista {
+    padding: 24px 18px;
+  }
+}
+
+@media (min-width: 1025px) {
+  .menu-lateral {
+    position: relative;
+    transform: none !important;
+  }
+
+  .topbar-movil {
+    display: none !important;
+  }
+}
