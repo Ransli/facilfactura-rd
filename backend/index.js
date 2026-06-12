@@ -6,6 +6,7 @@ import { fileURLToPath } from 'url'
 import { testConnection } from './config/database.js'
 import authRoutes from './routes/auth.js'
 import clientesRoutes from './routes/clientes.js'
+import categoriasRoutes from './routes/categorias.js'
 
 dotenv.config()
 
@@ -29,6 +30,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')))
 // ── Rutas ─────────────────────────────────────────────────────
 app.use('/api/auth', authRoutes)
 app.use('/api/clientes', clientesRoutes)
+app.use('/api/categorias', categoriasRoutes)
 
 // ── Health check ──────────────────────────────────────────────
 app.get('/api/health', (_req, res) => {
