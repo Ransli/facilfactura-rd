@@ -5,6 +5,7 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import { testConnection } from './config/database.js'
 import authRoutes from './routes/auth.js'
+import clientesRoutes from './routes/clientes.js'
 
 dotenv.config()
 
@@ -27,6 +28,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')))
 
 // ── Rutas ─────────────────────────────────────────────────────
 app.use('/api/auth', authRoutes)
+app.use('/api/clientes', clientesRoutes)
 
 // ── Health check ──────────────────────────────────────────────
 app.get('/api/health', (_req, res) => {
@@ -37,7 +39,7 @@ app.get('/api/health', (_req, res) => {
 app.use((err, _req, res, _next) => {
   console.error(err.stack)
   res.status(err.status || 500).json({
-    ok:      false,
+    ok: false,
     mensaje: err.message || 'Error interno del servidor',
   })
 })
