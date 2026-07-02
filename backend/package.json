@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "node --watch index.js",
     "start": "node index.js",
-    "cli": "node cli/usuarios.js"
+    "seed": "node seed-usuarios.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
