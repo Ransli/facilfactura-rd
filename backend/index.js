@@ -12,6 +12,10 @@ import categoriasRoutes from './routes/categorias.js'
 import unidadesMedidaRoutes from './routes/unidades-medida.js'
 import articulosRoutes from './routes/articulos.js'
 import ncfRoutes from './routes/ncf.js'
+import tiposServicioRoutes from './routes/tipos-servicio.js'
+import metodosPagoRoutes from './routes/metodos-pago.js'
+import configuracionRoutes from './routes/configuracion.js'
+import facturasRoutes from './routes/facturas.js'
 
 dotenv.config()
 
@@ -19,7 +23,7 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname  = path.dirname(__filename)
 
 const app  = express()
-const PORT = process.env.PORT || 3001
+const PORT = process.env.PORT || 3002
 
 // ── Middlewares globales ──────────────────────────────────────
 app.use(cors({
@@ -40,6 +44,10 @@ app.use('/api/categorias', categoriasRoutes)
 app.use('/api/unidades-medida', unidadesMedidaRoutes)
 app.use('/api/articulos', articulosRoutes)
 app.use('/api/ncf', ncfRoutes)
+app.use('/api/tipos-servicio', tiposServicioRoutes)
+app.use('/api/metodos-pago', metodosPagoRoutes)
+app.use('/api/configuracion', configuracionRoutes)
+app.use('/api/facturas', facturasRoutes)
 
 // ── Health check ──────────────────────────────────────────────
 app.get('/api/health', (_req, res) => {
