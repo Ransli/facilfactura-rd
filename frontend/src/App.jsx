@@ -7,6 +7,7 @@ import Clientes from './vistas/Clientes'
 import NFC from './vistas/NFC'
 import Historial from './vistas/Historial'
 import Configuracion from './vistas/Configuracion'
+import Usuarios from './vistas/Usuarios'
 import Login from './vistas/Login'
 import { useAuth } from './context/AuthContext'
 
@@ -17,6 +18,7 @@ const VISTAS = {
   nfc:           NFC,
   historial:     Historial,
   configuracion: Configuracion,
+  usuarios:      Usuarios,
 }
 
 export default function App() {

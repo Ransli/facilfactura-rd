@@ -7,10 +7,13 @@ const items = [
   { id: 'nfc',           icono: 'fa-solid fa-barcode',             label: 'NCF' },
   { id: 'historial',     icono: 'fa-solid fa-clock-rotate-left',   label: 'Historial' },
   { id: 'configuracion', icono: 'fa-solid fa-cog',                 label: 'Configuración' },
+  { id: 'usuarios',      icono: 'fa-solid fa-user-gear',           label: 'Usuarios', soloAdmin: true },
 ]
 
 export default function MenuLateral({ vistaActiva, setVistaActiva, abierto }) {
   const { usuario, logout } = useAuth()
+
+  const itemsVisibles = items.filter(item => !item.soloAdmin || usuario?.rol === 'admin')
 
   return (
     <nav className={`menu-lateral${abierto ? ' activo' : ''}`}>
@@ -20,7 +23,7 @@ export default function MenuLateral({ vistaActiva, setVistaActiva, abierto }) {
       </div>
 
       <ul>
-        {items.map((item) => (
+        {itemsVisibles.map((item) => (
           <li
             key={item.id}
             className={`item-menu${vistaActiva === item.id ? ' activo' : ''}`}
