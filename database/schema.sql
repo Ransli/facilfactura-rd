@@ -1,15 +1,15 @@
 -- ============================================================
 -- SISTEMA DE FACTURACIÓN - REPÚBLICA DOMINICANA
--- Base de datos: factura_db
+-- Base de datos: facilfactura_db
 -- Versión: 1.0.0
 -- Fecha: 2026-03-07
 -- ============================================================
 
-CREATE DATABASE IF NOT EXISTS factura_db
+CREATE DATABASE IF NOT EXISTS facilfactura_db
   CHARACTER SET utf8mb4
   COLLATE utf8mb4_unicode_ci;
 
-USE factura_db;
+USE facilfactura_db;
 
 -- ============================================================
 -- ROLES DE USUARIO
