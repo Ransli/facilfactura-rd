@@ -28,7 +28,7 @@ const PORT = process.env.PORT || 3002
 
 // ── Middlewares globales ──────────────────────────────────────
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://localhost:5174'],
+  origin: ['http://localhost:5175'],
   credentials: true,
 }))
 

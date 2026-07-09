@@ -96,7 +96,7 @@ Esto crea tres usuarios de prueba:
 ```bash
 npm run dev
 ```
-- Frontend: http://localhost:5173
+- Frontend: http://localhost:5175
 - API:      http://localhost:3002/api
 
 > También puedes ejecutarlos por separado con `npm run dev:backend` y `npm run dev:frontend`.
