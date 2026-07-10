@@ -166,6 +166,71 @@
   font-size: .9rem;
 }
 
+/* ── Secuencias NCF disponibles ───────────────────────── */
+.dash-ncf {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 22px 32px;
+}
+
+.dash-ncf-cabecera {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 7px;
+}
+
+.dash-ncf-tipo {
+  font-family: ui-monospace, "Courier New", monospace;
+  font-weight: 700;
+  color: #17406d;
+  background: #eef4fb;
+  padding: 2px 7px;
+  border-radius: 5px;
+  font-size: .82rem;
+}
+
+.dash-ncf-desc {
+  font-size: .86rem;
+  color: #55606c;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dash-ncf-restantes {
+  margin-left: auto;
+  font-size: .82rem;
+  white-space: nowrap;
+}
+
+.dash-ncf-restantes strong { font-size: 1rem; }
+
+.dash-ncf-pista {
+  height: 9px;
+  background: #e0e8f0;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.dash-ncf-barra {
+  height: 100%;
+  border-radius: 6px;
+  transition: width .5s cubic-bezier(.4, 0, .2, 1);
+}
+
+.dash-ncf-pie {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 5px;
+  font-size: .74rem;
+  color: #93a1b1;
+}
+
 /* ── Gráfico de barras ────────────────────────────────── */
 .dash-barras {
   display: flex;
@@ -404,7 +469,7 @@
 /* ── Tabla de últimas facturas ────────────────────────── */
 .dash-td-num { text-align: right; }
 
-.dash-ncf {
+.dash-ncf-numero {
   display: block;
   font-size: .72rem;
   color: #93a1b1;

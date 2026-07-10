@@ -23,6 +23,52 @@ const ESTADOS = {
   anulada:  { label: 'Anuladas',  icono: 'fa-circle-xmark',        clase: 'rojo'    },
 }
 
+// Mismos umbrales que la vista NCF, para que el color signifique lo mismo
+// en las dos pantallas.
+const colorBarra = (p) => (p >= 90 ? '#c0392b' : p >= 70 ? '#e67e22' : '#27ae60')
+
+function SecuenciasNcf({ secuencias }) {
+  if (!secuencias.length) {
+    return <p className="dash-vacio">No hay secuencias NCF activas. Regístralas en la sección NCF.</p>
+  }
+
+  return (
+    <ul className="dash-ncf">
+      {secuencias.map((s) => {
+        const usado = Math.round((s.ultimo_usado / s.hasta) * 100)
+        const color = s.vencida ? '#c0392b' : colorBarra(usado)
+
+        return (
+          <li key={s.id}>
+            <div className="dash-ncf-cabecera">
+              <span className="dash-ncf-tipo">{s.tipo_ncf}</span>
+              <span className="dash-ncf-desc">{s.descripcion || 'Sin descripción'}</span>
+              {s.vencida
+                ? <span className="badge badge-rojo">Vencida</span>
+                : s.por_agotarse
+                  ? <span className="badge badge-naranja">Por agotarse</span>
+                  : null}
+              <span className="dash-ncf-restantes" style={{ color }}>
+                <strong>{s.disponibles}</strong> de {s.hasta - s.desde + 1}
+              </span>
+            </div>
+
+            <div className="dash-ncf-pista" title={`${usado}% consumido · usados ${s.ultimo_usado} de ${s.hasta}`}>
+              <div className="dash-ncf-barra" style={{ width: `${usado}%`, background: color }}></div>
+            </div>
+
+            <div className="dash-ncf-pie">
+              <span>Rango {s.desde}–{s.hasta}</span>
+              <span>{usado}% consumido</span>
+              <span>{s.fecha_vencimiento ? `Vence ${fecha(s.fecha_vencimiento)}` : 'Sin vencimiento'}</span>
+            </div>
+          </li>
+        )
+      })}
+    </ul>
+  )
+}
+
 function Saludo({ nombre }) {
   const h = new Date().getHours()
   const momento = h < 12 ? 'Buenos días' : h < 19 ? 'Buenas tardes' : 'Buenas noches'
@@ -235,6 +281,13 @@ export default function Dashboard() {
         />
       </section>
 
+      <section className="vista-card dash-panel">
+        <header className="dash-panel-head">
+          <h2><i className="fas fa-barcode"></i> Comprobantes disponibles por tipo</h2>
+        </header>
+        <SecuenciasNcf secuencias={ncf} />
+      </section>
+
       <section className="dash-grid">
         <div className="vista-card dash-panel">
           <header className="dash-panel-head">
@@ -314,7 +367,7 @@ export default function Dashboard() {
                     <tr key={f.id}>
                       <td>
                         <strong>{f.numero}</strong>
-                        {f.nfc_numero && <span className="dash-ncf">{f.nfc_numero}</span>}
+                        {f.nfc_numero && <span className="dash-ncf-numero">{f.nfc_numero}</span>}
                       </td>
                       <td>{f.cliente_nombre}</td>
                       <td>{fecha(f.fecha)}</td>
