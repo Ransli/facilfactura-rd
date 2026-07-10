@@ -134,8 +134,20 @@ router.put('/', soloAdmin, async (req, res) => {
   }
 })
 
+// Sin esto, un archivo rechazado por multer (muy pesado o no imagen) sale
+// como HTML de error y el frontend no puede leer el motivo.
+function recibirLogo(req, res, next) {
+  upload.single('logo')(req, res, (err) => {
+    if (!err) return next()
+    const mensaje = err.code === 'LIMIT_FILE_SIZE'
+      ? `La imagen supera el máximo de ${Number(process.env.MAX_FILE_SIZE_MB) || 5} MB`
+      : err.message
+    res.status(400).json({ ok: false, mensaje })
+  })
+}
+
 // POST /api/configuracion/logo — sube el logo de la empresa
-router.post('/logo', soloAdmin, upload.single('logo'), async (req, res) => {
+router.post('/logo', soloAdmin, recibirLogo, async (req, res) => {
   if (!req.file) return res.status(400).json({ ok: false, mensaje: 'No se recibió ningún archivo' })
 
   const logoPath = `/uploads/${req.file.filename}`

@@ -37,12 +37,28 @@ export const api = {
   put:    (endpoint, body)   => request(endpoint, { method: 'PUT',    body: JSON.stringify(body) }),
   delete: (endpoint)         => request(endpoint, { method: 'DELETE' }),
 
-  upload: (endpoint, formData) => {
+  upload: async (endpoint, formData) => {
     const token = getToken()
-    return fetch(`${BASE_URL}${endpoint}`, {
+    const res = await fetch(`${BASE_URL}${endpoint}`, {
       method: 'POST',
       headers: token ? { Authorization: `Bearer ${token}` } : {},
       body: formData,
-    }).then(r => r.json())
+    })
+
+    if (res.status === 401) {
+      localStorage.removeItem('token')
+      localStorage.removeItem('usuario')
+      window.location.href = '/'
+      return
+    }
+
+    // Un error no controlado del servidor responde HTML, no JSON.
+    const data = await res.json().catch(() => ({}))
+
+    if (!res.ok) {
+      throw new Error(data.mensaje || 'No se pudo subir el archivo')
+    }
+
+    return data
   },
 }
