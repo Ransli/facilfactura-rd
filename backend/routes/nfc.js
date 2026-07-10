@@ -22,8 +22,8 @@ router.get('/', async (req, res) => {
   }
 })
 
-// GET /api/nfc/activa — devuelve la secuencia activa con estado de alerta
-router.get('/activa', async (req, res) => {
+// GET /api/nfc/activas — todas las secuencias vigentes, una por tipo
+router.get('/activas', async (req, res) => {
   try {
     const [rows] = await pool.query(
       `SELECT *,
@@ -31,13 +31,37 @@ router.get('/activa', async (req, res) => {
         (hasta - ultimo_usado) AS disponibles
        FROM nfc_secuencias
        WHERE activo = 1
-       LIMIT 1`
+       ORDER BY tipo_ncf`
+    )
+    res.json({ ok: true, data: rows })
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({ ok: false, mensaje: 'Error del servidor' })
+  }
+})
+
+// GET /api/nfc/activa?tipo=B01 — secuencia activa de un tipo, con estado de alerta.
+// Sin `tipo` devuelve la primera vigente, para no romper a quien ya la consumía así.
+router.get('/activa', async (req, res) => {
+  const { tipo } = req.query
+  try {
+    const [rows] = await pool.query(
+      `SELECT *,
+        ROUND((ultimo_usado / hasta) * 100, 1) AS porcentaje_usado,
+        (hasta - ultimo_usado) AS disponibles
+       FROM nfc_secuencias
+       WHERE activo = 1 ${tipo ? 'AND tipo_ncf = ?' : ''}
+       ORDER BY tipo_ncf
+       LIMIT 1`,
+      tipo ? [tipo] : []
     )
 
     if (!rows[0]) {
       return res.status(404).json({
         ok: false,
-        mensaje: 'No hay secuencia NCF activa. Registra una en la sección NCF.',
+        mensaje: tipo
+          ? `No hay secuencia NCF activa del tipo ${tipo}. Registra una en la sección NCF.`
+          : 'No hay secuencia NCF activa. Registra una en la sección NCF.',
       })
     }
 
@@ -74,7 +98,12 @@ router.post('/', soloAdmin, async (req, res) => {
   const alerta_desde = Math.floor(Number(hasta) * 0.8)
 
   try {
-    await pool.query(`UPDATE nfc_secuencias SET activo = 0 WHERE activo = 1`)
+    // Solo una secuencia vigente por tipo: registrar un B01 nuevo jubila el B01
+    // anterior, pero deja intactos el B02, el B15 y los demás.
+    await pool.query(
+      `UPDATE nfc_secuencias SET activo = 0 WHERE activo = 1 AND tipo_ncf = ?`,
+      [tipo_ncf]
+    )
 
     const [result] = await pool.query(
       `INSERT INTO nfc_secuencias (tipo_ncf, descripcion, desde, hasta, ultimo_usado, alerta_desde, fecha_vencimiento, activo)

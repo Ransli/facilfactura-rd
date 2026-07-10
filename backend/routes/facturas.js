@@ -80,7 +80,7 @@ router.get('/:id', async (req, res) => {
 
 // POST /api/facturas — emite una factura: asigna NCF, calcula impuestos y guarda
 router.post('/', soloFacturador, async (req, res) => {
-  const { cliente_id, empresa_id, tipo_servicio_id, fecha, vencimiento, servicio, items } = req.body
+  const { cliente_id, empresa_id, tipo_servicio_id, tipo_ncf, fecha, vencimiento, servicio, items } = req.body
 
   if (!cliente_id || !empresa_id) {
     return res.status(400).json({ ok: false, mensaje: 'cliente_id y empresa_id son requeridos' })
@@ -101,14 +101,24 @@ router.post('/', soloFacturador, async (req, res) => {
       return res.status(400).json({ ok: false, mensaje: 'No hay configuración del sistema. Configúrala primero.' })
     }
 
-    // 2. Secuencia NCF activa (bloqueada para la transacción)
+    // 2. Secuencia NCF del tipo pedido (bloqueada para la transacción).
+    // Sin tipo_ncf se toma la primera vigente, que es como se comportaba antes.
     const [seqRows] = await conn.query(
-      'SELECT * FROM nfc_secuencias WHERE activo = 1 LIMIT 1 FOR UPDATE'
+      `SELECT * FROM nfc_secuencias
+       WHERE activo = 1 ${tipo_ncf ? 'AND tipo_ncf = ?' : ''}
+       ORDER BY tipo_ncf
+       LIMIT 1 FOR UPDATE`,
+      tipo_ncf ? [tipo_ncf] : []
     )
     const seq = seqRows[0]
     if (!seq) {
       await conn.rollback()
-      return res.status(400).json({ ok: false, mensaje: 'No hay una secuencia NCF activa. Registra una en la sección NCF.' })
+      return res.status(400).json({
+        ok: false,
+        mensaje: tipo_ncf
+          ? `No hay una secuencia NCF activa del tipo ${tipo_ncf}. Registra una en la sección NCF.`
+          : 'No hay una secuencia NCF activa. Registra una en la sección NCF.',
+      })
     }
 
     const siguienteNcf = Math.max(seq.ultimo_usado + 1, seq.desde)
