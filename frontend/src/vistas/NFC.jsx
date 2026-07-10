@@ -7,9 +7,10 @@ const FORM_VACIO = { tipo_ncf: 'B01', descripcion: '', desde: '', hasta: '', fec
 const TIPOS_NCF = [
   { valor: 'B01', label: 'B01 — Crédito Fiscal' },
   { valor: 'B02', label: 'B02 — Consumidor Final' },
+  { valor: 'B11', label: 'B11 — Proveedores Informales' },
   { valor: 'B14', label: 'B14 — Regímenes Especiales' },
   { valor: 'B15', label: 'B15 — Gubernamental' },
-  { valor: 'B16', label: 'B16 — Proveedores Informales' },
+  { valor: 'B16', label: 'B16 — Exportaciones' },
 ]
 
 export default function NFC() {
