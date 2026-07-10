@@ -5,6 +5,10 @@
 -- Fecha: 2026-03-07
 -- ============================================================
 
+-- El cliente mysql de Windows anuncia cp850 por defecto y degrada los acentos
+-- a '?' antes de que lleguen al servidor. Esto le dice cómo leer el archivo.
+SET NAMES utf8mb4;
+
 CREATE DATABASE IF NOT EXISTS facilfactura_db
   CHARACTER SET utf8mb4
   COLLATE utf8mb4_unicode_ci;
