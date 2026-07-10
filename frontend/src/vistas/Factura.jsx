@@ -3,6 +3,7 @@ import { Fragment } from 'react'
 import './Factura.css'
 import { api } from '../api/config'
 import Toast, { useToast } from '../components/Toast'
+import { guardarBorrador, leerBorrador, limpiarBorrador } from '../utils/borrador'
 
 const fmt = (n) =>
   Number(n).toLocaleString('es-DO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
@@ -16,6 +17,9 @@ const whatsappUrl = (tel, cel) => {
   return `https://web.whatsapp.com/send?phone=${intl}`
 }
 
+const horaCorta = (iso) =>
+  new Date(iso).toLocaleTimeString('es-DO', { hour: '2-digit', minute: '2-digit' })
+
 const fechaLegible = (iso) =>
   iso ? new Date(iso + 'T12:00:00').toLocaleDateString('es-DO', { year: 'numeric', month: 'short', day: '2-digit' }) : '—'
 
@@ -26,12 +30,17 @@ export default function Factura() {
   const [unidades, setUnidades]           = useState([])
   const [alertaNcf, setAlertaNcf]         = useState(null)
 
-  const [items, setItems]                 = useState([])
-  const [cliente, setCliente]             = useState(null)
-  const [tipoServicioId, setTipoSvcId]    = useState('')
-  const [vencimiento, setVencimiento]     = useState('')
+  // La factura en curso arranca desde el borrador local, si quedó uno.
+  const borradorInicial = useMemo(() => leerBorrador(), [])
+
+  const [items, setItems]                 = useState(() => borradorInicial?.items ?? [])
+  const [cliente, setCliente]             = useState(() => borradorInicial?.cliente ?? null)
+  const [tipoServicioId, setTipoSvcId]    = useState(() => borradorInicial?.tipoServicioId ?? '')
+  const [vencimiento, setVencimiento]     = useState(() => borradorInicial?.vencimiento ?? '')
   const [facturaGuardada, setFacturaG]    = useState(null)
   const [guardando, setGuardando]         = useState(false)
+  const [guardadoEn, setGuardadoEn]       = useState(borradorInicial?.guardadoEn ?? null)
+  const [confirmandoDescarte, setConfirmandoDescarte] = useState(false)
 
   const [modalArts, setModalArts]         = useState(false)
   const [seleccionados, setSeleccionados] = useState({})
@@ -160,6 +169,17 @@ export default function Factura() {
     return Object.values(grupos).sort((a, b) => a.orden - b.orden)
   }, [items])
 
+  // Cada cambio en la factura se persiste. Una vez emitida ya no hay borrador
+  // que mantener: lo que vale es lo que quedó en la base.
+  useEffect(() => {
+    if (facturaGuardada) return
+    setGuardadoEn(guardarBorrador({ items, cliente, tipoServicioId, vencimiento }))
+  }, [items, cliente, tipoServicioId, vencimiento, facturaGuardada])
+
+  useEffect(() => {
+    if (borradorInicial) mostrar('Se recuperó la factura que estabas editando', 'success')
+  }, [borradorInicial, mostrar])
+
   async function guardar() {
     if (!cliente)              { mostrar('Selecciona un cliente', 'warning'); return }
     if (items.length === 0)    { mostrar('Agrega al menos un artículo', 'warning'); return }
@@ -178,6 +198,8 @@ export default function Factura() {
         })),
       })
       setFacturaG(res.data)
+      limpiarBorrador()
+      setGuardadoEn(null)
       if (res.alerta_ncf) setAlertaNcf(res.alerta_ncf_mensaje)
     } catch (err) { mostrar(err.message) }
     finally { setGuardando(false) }
@@ -192,8 +214,23 @@ export default function Factura() {
   }
 
   function nuevaFactura() {
+    limpiarBorrador()
+    setGuardadoEn(null)
     setItems([]); setCliente(null); setTipoSvcId('');
     setVencimiento(''); setFacturaG(null); setAlertaNcf(null)
+  }
+
+  // Dos clics en vez de un window.confirm: no bloquea el navegador y se
+  // rearma solo si el usuario se arrepiente.
+  function descartarBorrador() {
+    if (!confirmandoDescarte) {
+      setConfirmandoDescarte(true)
+      setTimeout(() => setConfirmandoDescarte(false), 4000)
+      return
+    }
+    setConfirmandoDescarte(false)
+    nuevaFactura()
+    mostrar('Borrador descartado', 'info')
   }
 
   const empresa = config ? { nombre: config.empresa_nombre, rnc: config.empresa_rnc, logo_path: config.logo_path } : null
@@ -201,6 +238,24 @@ export default function Factura() {
   return (
     <>
     <section className="factura-main">
+
+      {!facturaGuardada && guardadoEn && (
+        <div className="factura-borrador no-print">
+          <i className="fas fa-cloud-arrow-down"></i>
+          <div className="factura-borrador-texto">
+            <strong>En edición</strong> — esta factura aún no se ha emitido.
+            <span> Guardada en este navegador a las {horaCorta(guardadoEn)}.</span>
+          </div>
+          <button
+            type="button"
+            className={`factura-borrador-btn${confirmandoDescarte ? ' confirmando' : ''}`}
+            onClick={descartarBorrador}
+          >
+            <i className={`fas ${confirmandoDescarte ? 'fa-triangle-exclamation' : 'fa-trash'}`}></i>
+            {confirmandoDescarte ? '¿Seguro? Clic de nuevo' : 'Descartar'}
+          </button>
+        </div>
+      )}
 
       {alertaNcf && (
         <div style={{ background:'#fff8e1', border:'1px solid #ffe082', borderRadius:10, padding:'12px 16px', marginBottom:16, display:'flex', alignItems:'flex-start', gap:10, color:'#7a5500', fontSize:'0.92rem' }}>

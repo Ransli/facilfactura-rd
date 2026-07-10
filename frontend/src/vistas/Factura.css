@@ -502,6 +502,61 @@
 }
 
 /* ======== IMPRESIÓN ======== */
+/* ── Barra de factura en edición (borrador local) ─────── */
+.factura-borrador {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding: 11px 16px;
+  border: 1px solid #cdd8e6;
+  border-left: 4px solid #55b6ff;
+  border-radius: 10px;
+  background: #f4f9ff;
+  color: #2c4a68;
+  font-size: 0.9rem;
+}
+
+.factura-borrador > i {
+  color: #55b6ff;
+  font-size: 1.05rem;
+}
+
+.factura-borrador-texto { flex: 1; }
+.factura-borrador-texto strong { color: #17406d; }
+.factura-borrador-texto span { color: #7d8ea0; }
+
+.factura-borrador-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid #cdd8e6;
+  border-radius: 7px;
+  background: #fff;
+  color: #7d8ea0;
+  font-size: 0.83rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all .15s ease;
+}
+
+.factura-borrador-btn:hover {
+  border-color: #d9a0a0;
+  color: #c0392b;
+}
+
+.factura-borrador-btn.confirmando {
+  border-color: #c0392b;
+  background: #c0392b;
+  color: #fff;
+}
+
+@media (max-width: 600px) {
+  .factura-borrador { flex-wrap: wrap; }
+  .factura-borrador-texto span { display: block; }
+}
+
 @media print {
   body * {
     visibility: hidden;
@@ -510,6 +565,13 @@
   .factura-main,
   .factura-main * {
     visibility: visible;
+  }
+
+  /* La barra de borrador vive dentro de .factura-main, así que la regla de
+     arriba la haría visible en el papel. */
+  .no-print,
+  .no-print * {
+    display: none !important;
   }
 
   .factura-main {
