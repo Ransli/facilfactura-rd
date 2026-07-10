@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from 'react'
 import { api } from '../api/config'
 import Toast, { useToast } from '../components/Toast'
+import ModalCategorias from '../components/ModalCategorias'
+import { useAuth } from '../context/AuthContext'
 import './vistas.css'
 
 const FORM_VACIO = {
@@ -22,7 +24,15 @@ export default function Productos() {
   const [editId, setEditId]         = useState(null)
   const [guardando, setGuardando]   = useState(false)
   const [error, setError]           = useState('')
+  const [modalCats, setModalCats]   = useState(false)
   const { toast, mostrar, cerrar }  = useToast()
+  const { usuario } = useAuth()
+
+  const esAdmin = usuario?.rol === 'admin'
+
+  const cargarCategorias = useCallback(() => {
+    api.get('/categorias').then(r => setCategorias(r.data)).catch(() => {})
+  }, [])
 
   const cargar = useCallback(async () => {
     setCargando(true)
@@ -42,9 +52,9 @@ export default function Productos() {
   }, [cargar])
 
   useEffect(() => {
-    api.get('/categorias').then(r => setCategorias(r.data)).catch(() => {})
+    cargarCategorias()
     api.get('/unidades-medida').then(r => setUnidades(r.data)).catch(() => {})
-  }, [])
+  }, [cargarCategorias])
 
   function abrirNuevo() {
     setForm(FORM_VACIO); setPrecios([]); setEditId(null); setError(''); setModal(true)
@@ -121,7 +131,14 @@ export default function Productos() {
     <div className="vista-card">
       <div className="vista-header">
         <h2 className="vista-titulo"><i className="fas fa-box"></i> Productos y Servicios</h2>
-        <button className="btn-primary" onClick={abrirNuevo}><i className="fas fa-plus"></i> Nuevo artículo</button>
+        <div style={{ display:'flex', gap:8, flexWrap:'wrap' }}>
+          {esAdmin && (
+            <button className="btn-secondary" onClick={() => setModalCats(true)}>
+              <i className="fas fa-tags"></i> Categorías
+            </button>
+          )}
+          <button className="btn-primary" onClick={abrirNuevo}><i className="fas fa-plus"></i> Nuevo artículo</button>
+        </div>
       </div>
 
       <div className="vista-toolbar">
@@ -218,6 +235,11 @@ export default function Productos() {
                     <option value="">Seleccionar...</option>
                     {categorias.map(c => <option key={c.id} value={c.id}>{c.nombre}</option>)}
                   </select>
+                  {categorias.length === 0 && (
+                    <span className="campo-ayuda">
+                      No hay categorías. {esAdmin ? 'Cierra este formulario y crea una en «Categorías».' : 'Pide a un administrador que cree una.'}
+                    </span>
+                  )}
                 </div>
                 <div className="form-grupo">
                   <label>Unidad de medida por defecto <span className="requerido">*</span></label>
@@ -323,6 +345,13 @@ export default function Productos() {
         </div>
       )}
     </div>
+    {modalCats && (
+      <ModalCategorias
+        onCerrar={() => setModalCats(false)}
+        onCambio={cargarCategorias}
+      />
+    )}
+
     <Toast toast={toast} onClose={cerrar} />
     </>
   )
