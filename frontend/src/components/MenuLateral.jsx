@@ -1,6 +1,7 @@
 import { useAuth } from '../context/AuthContext'
 
 const items = [
+  { id: 'dashboard',     icono: 'fa-solid fa-chart-line',          label: 'Panel' },
   { id: 'factura',       icono: 'fa-solid fa-file-invoice',       label: 'Factura' },
   { id: 'productos',     icono: 'fa-solid fa-box',                 label: 'Productos' },
   { id: 'clientes',      icono: 'fa-solid fa-users',               label: 'Clientes' },

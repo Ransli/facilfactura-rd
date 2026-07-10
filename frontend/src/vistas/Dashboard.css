@@ -1,0 +1,451 @@
+.dash {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+/* ── Saludo ───────────────────────────────────────────── */
+.dash-saludo h1 {
+  margin: 0 0 4px;
+  font-size: 1.6rem;
+  color: #17406d;
+}
+
+.dash-saludo p {
+  margin: 0;
+  color: #6b7a8c;
+  font-size: .93rem;
+}
+
+/* ── Alerta de NCF ────────────────────────────────────── */
+.dash-alerta {
+  display: flex;
+  gap: 14px;
+  padding: 16px 18px;
+  background: #fff8e6;
+  border: 1px solid #f0d9a0;
+  border-left: 4px solid #e0a30b;
+  border-radius: 10px;
+}
+
+.dash-alerta > i {
+  color: #e0a30b;
+  font-size: 1.25rem;
+  margin-top: 2px;
+}
+
+.dash-alerta strong { color: #7a5600; }
+
+.dash-alerta ul {
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.dash-alerta li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: .88rem;
+  color: #6b5a35;
+}
+
+/* ── Tarjetas de métricas ─────────────────────────────── */
+.dash-tarjetas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 16px;
+}
+
+.dash-tarjeta {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 20px;
+  background: #fff;
+  border: 1px solid #e4e9ef;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(23, 64, 109, .05);
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+
+.dash-tarjeta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(23, 64, 109, .10);
+}
+
+.dash-tarjeta-icono {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: #eef4fb;
+  color: #17406d;
+  font-size: 1.05rem;
+}
+
+.dash-tarjeta.acento .dash-tarjeta-icono { background: #17406d; color: #fff; }
+.dash-tarjeta.peligro .dash-tarjeta-icono { background: #ffe8e8; color: #9b2323; }
+
+.dash-tarjeta-cuerpo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.dash-tarjeta-label {
+  font-size: .8rem;
+  color: #7a8899;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+.dash-tarjeta-valor {
+  font-size: 1.45rem;
+  color: #17406d;
+  line-height: 1.25;
+  word-break: break-word;
+}
+
+.dash-tarjeta-sub {
+  font-size: .84rem;
+  color: #8593a3;
+}
+
+.dash-var {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 6px;
+  font-size: .8rem;
+  font-weight: 600;
+}
+
+.dash-var.subida { color: #1a7a45; }
+.dash-var.bajada { color: #9b2323; }
+
+/* ── Paneles ──────────────────────────────────────────── */
+.dash-grid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 16px;
+}
+
+.dash-grid:last-child { grid-template-columns: 1fr 1.4fr; }
+
+.dash-panel { padding: 20px; }
+
+.dash-panel-head {
+  margin-bottom: 18px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #eef1f5;
+}
+
+.dash-panel-head h2 {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 0;
+  font-size: 1rem;
+  color: #17406d;
+}
+
+.dash-panel-head i { color: #55b6ff; }
+
+.dash-vacio {
+  margin: 0;
+  padding: 32px 12px;
+  text-align: center;
+  color: #93a1b1;
+  font-size: .9rem;
+}
+
+/* ── Gráfico de barras ────────────────────────────────── */
+.dash-barras {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-around;
+  gap: 10px;
+  height: 230px;
+}
+
+.dash-barra-col {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  height: 100%;
+  min-width: 0;
+}
+
+.dash-barra-pista {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  width: 100%;
+  max-width: 54px;
+  flex: 1;
+  background: #f3f6fa;
+  border-radius: 6px 6px 0 0;
+}
+
+.dash-barra {
+  position: relative;
+  width: 100%;
+  min-height: 4px;
+  border-radius: 6px 6px 0 0;
+  background: linear-gradient(180deg, #55b6ff, #17406d);
+  transition: height .5s cubic-bezier(.4, 0, .2, 1);
+}
+
+.dash-barra-tip {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 3px 7px;
+  border-radius: 5px;
+  background: #17406d;
+  color: #fff;
+  font-size: .68rem;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .15s ease;
+}
+
+.dash-barra-pista:hover .dash-barra-tip { opacity: 1; }
+
+.dash-barra-mes {
+  font-size: .76rem;
+  color: #6b7a8c;
+  text-transform: capitalize;
+}
+
+.dash-barra-cant {
+  font-size: .72rem;
+  font-weight: 700;
+  color: #17406d;
+}
+
+/* ── Dona de estados ──────────────────────────────────── */
+.dash-estados {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.dash-dona-wrap {
+  position: relative;
+  flex-shrink: 0;
+  width: 140px;
+  height: 140px;
+}
+
+.dash-dona {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.dash-dona circle {
+  fill: none;
+  stroke-width: 16;
+}
+
+.dash-dona-pista { stroke: #f0f3f7; }
+
+.dash-dona-seg {
+  transition: stroke-dasharray .6s cubic-bezier(.4, 0, .2, 1);
+}
+
+.seg-verde   { stroke: #34a86a; }
+.seg-naranja { stroke: #e8a33d; }
+.seg-rojo    { stroke: #d15757; }
+.seg-gris    { stroke: #b6c0cb; }
+
+.dash-dona-centro {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.dash-dona-centro strong {
+  font-size: 1.6rem;
+  color: #17406d;
+  line-height: 1;
+}
+
+.dash-dona-centro span {
+  font-size: .72rem;
+  color: #8593a3;
+}
+
+.dash-leyenda {
+  flex: 1;
+  min-width: 190px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.dash-leyenda li {
+  display: grid;
+  grid-template-columns: 10px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  font-size: .87rem;
+  color: #55606c;
+}
+
+.dash-punto {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.punto-verde   { background: #34a86a; }
+.punto-naranja { background: #e8a33d; }
+.punto-rojo    { background: #d15757; }
+
+.dash-leyenda-label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.dash-leyenda-label i { color: #a9b5c2; font-size: .8rem; }
+
+.dash-leyenda strong { color: #17406d; }
+
+.dash-leyenda-monto {
+  grid-column: 2 / -1;
+  margin-top: -8px;
+  font-size: .78rem;
+  color: #93a1b1;
+}
+
+/* ── Lista de top clientes ────────────────────────────── */
+.dash-lista {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+}
+
+.dash-lista li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 0;
+  border-bottom: 1px solid #f1f4f7;
+}
+
+.dash-lista li:last-child { border-bottom: none; }
+
+.dash-puesto {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #eef4fb;
+  color: #17406d;
+  font-size: .76rem;
+  font-weight: 700;
+}
+
+.dash-lista li:first-child .dash-puesto { background: #17406d; color: #fff; }
+
+.dash-lista-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.dash-lista-info strong {
+  font-size: .9rem;
+  color: #2c3a49;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dash-lista-info span {
+  font-size: .77rem;
+  color: #93a1b1;
+}
+
+.dash-lista-monto {
+  font-weight: 700;
+  font-size: .9rem;
+  color: #17406d;
+  white-space: nowrap;
+}
+
+/* ── Tabla de últimas facturas ────────────────────────── */
+.dash-td-num { text-align: right; }
+
+.dash-ncf {
+  display: block;
+  font-size: .72rem;
+  color: #93a1b1;
+  font-family: ui-monospace, "Courier New", monospace;
+}
+
+/* ── Estados de carga y error ─────────────────────────── */
+.dash-cargando {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: 55vh;
+  color: #17406d;
+}
+
+.dash-cargando i { font-size: 1.9rem; }
+.dash-cargando span { font-size: .9rem; color: #8593a3; }
+
+.dash-error {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 22px;
+  border-left: 4px solid #d15757;
+}
+
+.dash-error > i { font-size: 1.5rem; color: #d15757; }
+.dash-error strong { color: #9b2323; }
+.dash-error p { margin: 4px 0 0; color: #7a8899; font-size: .88rem; }
+
+/* ── Responsive ───────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .dash-grid,
+  .dash-grid:last-child { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 600px) {
+  .dash-saludo h1 { font-size: 1.3rem; }
+  .dash-barras { height: 190px; }
+  .dash-estados { justify-content: center; }
+  .dash-tarjeta-valor { font-size: 1.25rem; }
+}

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import './App.css'
 import MenuLateral from './components/MenuLateral'
+import Dashboard from './vistas/Dashboard'
 import Factura from './vistas/Factura'
 import Productos from './vistas/Productos'
 import Clientes from './vistas/Clientes'
@@ -12,6 +13,7 @@ import Login from './vistas/Login'
 import { useAuth } from './context/AuthContext'
 
 const VISTAS = {
+  dashboard:     Dashboard,
   factura:       Factura,
   productos:     Productos,
   clientes:      Clientes,
@@ -23,7 +25,7 @@ const VISTAS = {
 
 export default function App() {
   const { usuario, cargando } = useAuth()
-  const [vistaActiva, setVistaActiva] = useState('factura')
+  const [vistaActiva, setVistaActiva] = useState('dashboard')
   const [menuAbierto, setMenuAbierto] = useState(false)
 
   useEffect(() => {
