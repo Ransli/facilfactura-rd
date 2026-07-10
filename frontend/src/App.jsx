@@ -23,9 +23,18 @@ const VISTAS = {
   usuarios:      Usuarios,
 }
 
+const VISTA_GUARDADA = 'vista_activa'
+
+// Al recargar se vuelve a la última vista, no al panel. Si el nombre guardado
+// ya no existe (menú renombrado, usuario sin permiso), se cae al panel.
+function vistaInicial() {
+  const guardada = localStorage.getItem(VISTA_GUARDADA)
+  return guardada && VISTAS[guardada] ? guardada : 'dashboard'
+}
+
 export default function App() {
   const { usuario, cargando } = useAuth()
-  const [vistaActiva, setVistaActiva] = useState('dashboard')
+  const [vistaActiva, setVistaActiva] = useState(vistaInicial)
   const [menuAbierto, setMenuAbierto] = useState(false)
 
   useEffect(() => {
@@ -52,17 +61,21 @@ export default function App() {
 
   if (!usuario) return <Login />
 
-  const VistaActual = VISTAS[vistaActiva]
+  // Un no-admin que recarga sobre Usuarios no debe quedarse en una vista
+  // que su menú ni siquiera le ofrece.
+  const vista = vistaActiva === 'usuarios' && usuario.rol !== 'admin' ? 'dashboard' : vistaActiva
+  const VistaActual = VISTAS[vista]
 
-  const cambiarVista = (vista) => {
-    setVistaActiva(vista)
+  const cambiarVista = (nueva) => {
+    setVistaActiva(nueva)
+    localStorage.setItem(VISTA_GUARDADA, nueva)
     setMenuAbierto(false)
   }
 
   return (
     <div className="contenedor-app">
       <MenuLateral
-        vistaActiva={vistaActiva}
+        vistaActiva={vista}
         setVistaActiva={cambiarVista}
         abierto={menuAbierto}
       />

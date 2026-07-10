@@ -31,6 +31,10 @@ export function AuthProvider({ children }) {
   function logout() {
     localStorage.removeItem('token')
     localStorage.removeItem('usuario')
+    // Sin esto el siguiente usuario aterriza en la vista del anterior,
+    // y su factura a medio hacer sigue en el navegador.
+    localStorage.removeItem('vista_activa')
+    localStorage.removeItem('factura_borrador')
     setUsuario(null)
   }
 
