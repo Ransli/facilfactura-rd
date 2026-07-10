@@ -322,6 +322,12 @@
   margin-top: 1px;
 }
 
+.campo-ayuda {
+  font-size: 0.75rem;
+  color: #93a1b1;
+  margin-top: 1px;
+}
+
 .form-grupo input.input-error,
 .form-grupo select.input-error,
 .form-grupo textarea.input-error {

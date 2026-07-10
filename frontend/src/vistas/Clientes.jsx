@@ -1,48 +1,14 @@
 import { useState, useEffect, useCallback } from 'react'
 import { api } from '../api/config'
 import Toast, { useToast } from '../components/Toast'
+import {
+  formatearRncCedula, formatearTelefono,
+  validarRncCedula, validarEmail, validarTelefono,
+  whatsappUrl,
+} from '../utils/formato'
 import './vistas.css'
 
 const FORM_VACIO = { nombre: '', rnc: '', telefono: '', celular: '', email: '', direccion: '', ciudad: '', tipo: 'empresa' }
-
-function whatsappUrl(telefono, celular) {
-  const num = (celular || telefono || '').replace(/\D/g, '')
-  if (!num) return null
-  const intl = num.length === 10 ? `1${num}` : num
-  return `https://web.whatsapp.com/send?phone=${intl}`
-}
-
-function validarRncCedula(v) {
-  if (!v) return ''
-  const n = v.replace(/\D/g, '')
-  if (n.length === 9 || n.length === 11) return ''
-  return 'Formato inválido. RNC: 9 dígitos (ej: 130-88170-7) · Cédula: 11 dígitos (ej: 001-1234567-8)'
-}
-function validarEmail(v) {
-  if (!v) return ''
-  return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v) ? '' : 'Correo inválido (ej: cliente@correo.com)'
-}
-function validarTelefono(v) {
-  if (!v) return ''
-  return v.replace(/\D/g, '').length === 10 ? '' : 'Teléfono inválido (ej: 809-555-0000 · 10 dígitos)'
-}
-function formatearRncCedula(v) {
-  const n = v.replace(/\D/g, '').slice(0, 11)
-  if (n.length <= 9) {
-    if (n.length <= 3) return n
-    if (n.length <= 8) return `${n.slice(0,3)}-${n.slice(3)}`
-    return `${n.slice(0,3)}-${n.slice(3,8)}-${n.slice(8)}`
-  }
-  if (n.length <= 3) return n
-  if (n.length <= 10) return `${n.slice(0,3)}-${n.slice(3)}`
-  return `${n.slice(0,3)}-${n.slice(3,10)}-${n.slice(10)}`
-}
-function formatearTelefono(v) {
-  const n = v.replace(/\D/g, '').slice(0, 10)
-  if (n.length <= 3) return n
-  if (n.length <= 6) return `${n.slice(0,3)}-${n.slice(3)}`
-  return `${n.slice(0,3)}-${n.slice(3,6)}-${n.slice(6)}`
-}
 
 export default function Clientes() {
   const [clientes, setClientes]   = useState([])

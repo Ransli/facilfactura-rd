@@ -1,6 +1,11 @@
 import { useState, useEffect, useCallback } from 'react'
 import { api } from '../api/config'
 import Toast, { useToast } from '../components/Toast'
+import {
+  formatearRncCedula, formatearTelefono, formatearCuenta, formatearPorcentaje,
+  validarRncCedula, validarEmail, validarTelefono, validarSitioWeb,
+  validarPorcentaje, validarRequerido,
+} from '../utils/formato'
 import './vistas.css'
 
 const API_ORIGIN = 'http://localhost:3002'
@@ -25,6 +30,8 @@ export default function Configuracion() {
   const [cargando, setCargando] = useState(true)
   const [guardando, setGuardando] = useState(false)
   const [subiendo, setSubiendo] = useState(false)
+
+  const [errores, setErrores]   = useState({})
 
   const [modalMet, setModalMet] = useState(false)
   const [formMet, setFormMet]   = useState(METODO_VACIO)
@@ -59,12 +66,69 @@ export default function Configuracion() {
 
   useEffect(() => { cargar() }, [cargar])
 
-  const onEmpresa = e => setEmpresa(f => ({ ...f, [e.target.name]: e.target.value }))
-  const onFiscal  = e => setFiscal(f => ({ ...f, [e.target.name]: e.target.value }))
+  // Cada campo se formatea mientras se escribe y se valida al salir de él.
+  const FORMATO_EMPRESA = {
+    empresa_rnc: formatearRncCedula,
+    telefono:    formatearTelefono,
+    celular:     formatearTelefono,
+  }
+  const VALIDA_EMPRESA = {
+    empresa_nombre: validarRequerido,
+    empresa_rnc:    (v) => validarRequerido(v) || validarRncCedula(v),
+    telefono:       validarTelefono,
+    celular:        validarTelefono,
+    email:          validarEmail,
+    sitio_web:      validarSitioWeb,
+  }
+
+  const onEmpresa = (e) => {
+    const { name, value } = e.target
+    const v = FORMATO_EMPRESA[name] ? FORMATO_EMPRESA[name](value) : value
+    setEmpresa(f => ({ ...f, [name]: v }))
+    if (errores[name]) setErrores(err => ({ ...err, [name]: '' }))
+  }
+
+  const onEmpresaBlur = (e) => {
+    const { name, value } = e.target
+    const err = VALIDA_EMPRESA[name] ? VALIDA_EMPRESA[name](value) : ''
+    setErrores(prev => ({ ...prev, [name]: err }))
+  }
+
+  const onFiscal = (e) => {
+    const { name, value } = e.target
+    setFiscal(f => ({ ...f, [name]: formatearPorcentaje(value) }))
+    if (errores[name]) setErrores(err => ({ ...err, [name]: '' }))
+  }
+
+  const onFiscalBlur = (e) => {
+    const { name, value } = e.target
+    setErrores(prev => ({ ...prev, [name]: validarPorcentaje(value) }))
+  }
+
+  // La moneda y el prefijo se guardan siempre en mayúsculas: 'dop' rompería el
+  // formateo de montos, y textTransform solo cambia lo que se ve.
+  const onTexto = (e) => {
+    const { name, value } = e.target
+    setFiscal(f => ({ ...f, [name]: value.toUpperCase() }))
+  }
 
   async function guardar() {
-    if (!empresa.empresa_nombre.trim()) { mostrar('El nombre de la empresa es requerido', 'warning'); return }
-    if (!empresa.empresa_rnc.trim())    { mostrar('El RNC de la empresa es requerido', 'warning'); return }
+    const errs = {}
+    for (const [campo, validar] of Object.entries(VALIDA_EMPRESA)) {
+      const err = validar(empresa[campo])
+      if (err) errs[campo] = err
+    }
+    for (const campo of ['itbis_porcentaje', 'ret_itbis_porcentaje', 'ret_isr_porcentaje', 'nfc_alerta_porcentaje']) {
+      const err = validarPorcentaje(fiscal[campo])
+      if (err) errs[campo] = err
+    }
+
+    if (Object.keys(errs).length) {
+      setErrores(errs)
+      mostrar('Revisa los campos marcados en rojo', 'warning')
+      return
+    }
+
     setGuardando(true)
     try {
       await api.put('/configuracion', { ...empresa, ...fiscal })
@@ -145,35 +209,57 @@ export default function Configuracion() {
         <div className="form-grid" style={{ flex:1, minWidth:280 }}>
           <div className="form-grupo col-span-2">
             <label>Nombre de la empresa <span className="requerido">*</span></label>
-            <input name="empresa_nombre" value={empresa.empresa_nombre} onChange={onEmpresa} placeholder="Mi Empresa SRL" />
+            <input name="empresa_nombre" value={empresa.empresa_nombre} onChange={onEmpresa} onBlur={onEmpresaBlur}
+              placeholder="Mi Empresa SRL" maxLength={200} autoComplete="organization"
+              className={errores.empresa_nombre ? 'input-error' : ''} />
+            {errores.empresa_nombre && <span className="campo-error">{errores.empresa_nombre}</span>}
           </div>
           <div className="form-grupo">
-            <label>RNC <span className="requerido">*</span></label>
-            <input name="empresa_rnc" value={empresa.empresa_rnc} onChange={onEmpresa} placeholder="130000000" />
+            <label>RNC o Cédula <span className="requerido">*</span></label>
+            <input name="empresa_rnc" value={empresa.empresa_rnc} onChange={onEmpresa} onBlur={onEmpresaBlur}
+              placeholder="130-88170-7" inputMode="numeric" maxLength={13}
+              className={errores.empresa_rnc ? 'input-error' : ''} />
+            {errores.empresa_rnc
+              ? <span className="campo-error">{errores.empresa_rnc}</span>
+              : <span className="campo-ayuda">RNC: 9 dígitos · Cédula: 11 dígitos</span>}
           </div>
           <div className="form-grupo">
             <label>Teléfono</label>
-            <input name="telefono" value={empresa.telefono} onChange={onEmpresa} placeholder="809-000-0000" />
+            <input name="telefono" value={empresa.telefono} onChange={onEmpresa} onBlur={onEmpresaBlur}
+              placeholder="809-000-0000" inputMode="tel" maxLength={12} autoComplete="tel"
+              className={errores.telefono ? 'input-error' : ''} />
+            {errores.telefono && <span className="campo-error">{errores.telefono}</span>}
           </div>
           <div className="form-grupo">
             <label>Celular</label>
-            <input name="celular" value={empresa.celular} onChange={onEmpresa} placeholder="829-000-0000" />
+            <input name="celular" value={empresa.celular} onChange={onEmpresa} onBlur={onEmpresaBlur}
+              placeholder="829-000-0000" inputMode="tel" maxLength={12}
+              className={errores.celular ? 'input-error' : ''} />
+            {errores.celular && <span className="campo-error">{errores.celular}</span>}
           </div>
           <div className="form-grupo">
             <label>Email</label>
-            <input name="email" value={empresa.email} onChange={onEmpresa} placeholder="correo@empresa.com" />
+            <input type="email" name="email" value={empresa.email} onChange={onEmpresa} onBlur={onEmpresaBlur}
+              placeholder="correo@empresa.com" maxLength={150} autoComplete="email" inputMode="email"
+              className={errores.email ? 'input-error' : ''} />
+            {errores.email && <span className="campo-error">{errores.email}</span>}
           </div>
           <div className="form-grupo col-span-2">
             <label>Dirección</label>
-            <input name="direccion" value={empresa.direccion} onChange={onEmpresa} placeholder="Calle, sector, ciudad" />
+            <input name="direccion" value={empresa.direccion} onChange={onEmpresa}
+              placeholder="Calle, sector, ciudad" maxLength={255} autoComplete="street-address" />
           </div>
           <div className="form-grupo">
             <label>Ciudad</label>
-            <input name="ciudad" value={empresa.ciudad} onChange={onEmpresa} placeholder="Santo Domingo" />
+            <input name="ciudad" value={empresa.ciudad} onChange={onEmpresa}
+              placeholder="Santo Domingo" maxLength={100} autoComplete="address-level2" />
           </div>
           <div className="form-grupo">
             <label>Sitio web</label>
-            <input name="sitio_web" value={empresa.sitio_web} onChange={onEmpresa} placeholder="www.empresa.com" />
+            <input name="sitio_web" value={empresa.sitio_web} onChange={onEmpresa} onBlur={onEmpresaBlur}
+              placeholder="www.empresa.com" maxLength={150} inputMode="url"
+              className={errores.sitio_web ? 'input-error' : ''} />
+            {errores.sitio_web && <span className="campo-error">{errores.sitio_web}</span>}
           </div>
         </div>
       </div>
@@ -185,27 +271,41 @@ export default function Configuracion() {
       <div className="form-grid">
         <div className="form-grupo">
           <label>ITBIS (%)</label>
-          <input type="number" step="0.01" name="itbis_porcentaje" value={fiscal.itbis_porcentaje} onChange={onFiscal} />
+          <input name="itbis_porcentaje" value={fiscal.itbis_porcentaje} onChange={onFiscal} onBlur={onFiscalBlur}
+            inputMode="decimal" maxLength={6} placeholder="18"
+            className={errores.itbis_porcentaje ? 'input-error' : ''} />
+          {errores.itbis_porcentaje && <span className="campo-error">{errores.itbis_porcentaje}</span>}
         </div>
         <div className="form-grupo">
           <label>Retención ITBIS (%)</label>
-          <input type="number" step="0.01" name="ret_itbis_porcentaje" value={fiscal.ret_itbis_porcentaje} onChange={onFiscal} />
+          <input name="ret_itbis_porcentaje" value={fiscal.ret_itbis_porcentaje} onChange={onFiscal} onBlur={onFiscalBlur}
+            inputMode="decimal" maxLength={6} placeholder="100"
+            className={errores.ret_itbis_porcentaje ? 'input-error' : ''} />
+          {errores.ret_itbis_porcentaje && <span className="campo-error">{errores.ret_itbis_porcentaje}</span>}
         </div>
         <div className="form-grupo">
           <label>Retención ISR (%)</label>
-          <input type="number" step="0.01" name="ret_isr_porcentaje" value={fiscal.ret_isr_porcentaje} onChange={onFiscal} />
+          <input name="ret_isr_porcentaje" value={fiscal.ret_isr_porcentaje} onChange={onFiscal} onBlur={onFiscalBlur}
+            inputMode="decimal" maxLength={6} placeholder="10"
+            className={errores.ret_isr_porcentaje ? 'input-error' : ''} />
+          {errores.ret_isr_porcentaje && <span className="campo-error">{errores.ret_isr_porcentaje}</span>}
         </div>
         <div className="form-grupo">
           <label>Moneda</label>
-          <input name="moneda" value={fiscal.moneda} onChange={onFiscal} placeholder="DOP" />
+          <input name="moneda" value={fiscal.moneda} onChange={onTexto} placeholder="DOP" maxLength={3}
+            style={{ textTransform: 'uppercase' }} />
         </div>
         <div className="form-grupo">
           <label>Prefijo de factura</label>
-          <input name="factura_prefijo" value={fiscal.factura_prefijo} onChange={onFiscal} placeholder="F" maxLength={5} />
+          <input name="factura_prefijo" value={fiscal.factura_prefijo} onChange={onTexto} placeholder="F" maxLength={5}
+            style={{ textTransform: 'uppercase' }} />
         </div>
         <div className="form-grupo">
           <label>Alerta NCF al (% usado)</label>
-          <input type="number" name="nfc_alerta_porcentaje" value={fiscal.nfc_alerta_porcentaje} onChange={onFiscal} />
+          <input name="nfc_alerta_porcentaje" value={fiscal.nfc_alerta_porcentaje} onChange={onFiscal} onBlur={onFiscalBlur}
+            inputMode="decimal" maxLength={6} placeholder="80"
+            className={errores.nfc_alerta_porcentaje ? 'input-error' : ''} />
+          {errores.nfc_alerta_porcentaje && <span className="campo-error">{errores.nfc_alerta_porcentaje}</span>}
         </div>
       </div>
 
@@ -261,11 +361,15 @@ export default function Configuracion() {
                 </div>
                 <div className="form-grupo">
                   <label>Banco</label>
-                  <input value={formMet.banco} onChange={e => setFormMet(f => ({ ...f, banco: e.target.value }))} placeholder="Banco Popular" />
+                  <input value={formMet.banco} onChange={e => setFormMet(f => ({ ...f, banco: e.target.value }))}
+                    placeholder="Banco Popular" maxLength={100} />
                 </div>
                 <div className="form-grupo">
                   <label>Número de cuenta</label>
-                  <input value={formMet.numero_cuenta} onChange={e => setFormMet(f => ({ ...f, numero_cuenta: e.target.value }))} placeholder="000-0000000-0" />
+                  <input value={formMet.numero_cuenta} inputMode="numeric" maxLength={20}
+                    onChange={e => setFormMet(f => ({ ...f, numero_cuenta: formatearCuenta(e.target.value) }))}
+                    placeholder="7960123456" />
+                  <span className="campo-ayuda">Solo números, hasta 20 dígitos</span>
                 </div>
                 <div className="form-grupo">
                   <label>Tipo de cuenta</label>
@@ -276,7 +380,8 @@ export default function Configuracion() {
                 </div>
                 <div className="form-grupo col-span-2">
                   <label>Titular</label>
-                  <input value={formMet.titular} onChange={e => setFormMet(f => ({ ...f, titular: e.target.value }))} placeholder="Nombre del titular" />
+                  <input value={formMet.titular} onChange={e => setFormMet(f => ({ ...f, titular: e.target.value }))}
+                    placeholder="Nombre del titular" maxLength={150} />
                 </div>
               </div>
               <div className="modal-footer">
