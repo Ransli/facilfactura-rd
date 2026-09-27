@@ -3,7 +3,7 @@
 > Módulo 7 del [mapa de capacidades](CAPABILITY-MAP.md). Fase 5 de la propuesta de la Unidad II (secciones III y VI).
 > Depende de `ecf-signing` y `subscription`. Fuente normativa: *Formato Comprobante Fiscal Electrónico (e-CF) v1.0*
 > (DGII, octubre 2025), del que salen las etiquetas, los códigos y la obligatoriedad usados aquí.
-> Estado: aprobado por Ransli el 2026-09-27 (trabajo local, se sube el día siguiente).
+> Estado: **implementado y probado** (E3-E11, 2026-09-27; trabajo local, se sube junto con Ransli). Suite completa en verde.
 
 ## Objective
 

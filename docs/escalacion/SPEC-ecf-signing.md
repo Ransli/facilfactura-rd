@@ -2,7 +2,7 @@
 
 > Módulo 6 del [mapa de capacidades](CAPABILITY-MAP.md). Fase 4 de la propuesta de la Unidad II (secciones III.2 y VI.2).
 > Depende de `tenancy`. Fuente normativa: *Formato Comprobante Fiscal Electrónico (e-CF) v1.0* (DGII, octubre 2025) y
-> el resumen de la Unidad II. Estado: aprobado por Ransli el 2026-09-27 (trabajo local, se sube el día siguiente).
+> el resumen de la Unidad II. Estado: **implementado y probado** (E1-E2, 2026-09-27; trabajo local, se sube junto con Ransli). Suite completa en verde.
 
 ## Objective
 

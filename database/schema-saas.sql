@@ -1,8 +1,8 @@
 -- ============================================================
 -- FácilFactura RD — esquema de la plataforma SaaS (base facilfactura_saas)
 -- ARCHIVO GENERADO con "npm run db:dump-schema": no editar a mano.
--- Fuente de verdad: database/migrations/ (5 migraciones aplicadas al generar este archivo).
--- Contiene 19 tablas y los datos de referencia; no contiene datos de ninguna empresa.
+-- Fuente de verdad: database/migrations/ (7 migraciones aplicadas al generar este archivo).
+-- Contiene 22 tablas y los datos de referencia; no contiene datos de ninguna empresa.
 -- ============================================================
 
 SET NAMES utf8mb4;
@@ -72,6 +72,26 @@ CREATE TABLE `categorias` (
   CONSTRAINT `fk_categorias_tenant` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Tabla certificados_digitales
+CREATE TABLE `certificados_digitales` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `tenant_id` int(10) unsigned NOT NULL,
+  `p12_cifrado` mediumtext NOT NULL,
+  `password_cifrada` text NOT NULL,
+  `titular` varchar(255) NOT NULL,
+  `emisor` varchar(255) NOT NULL,
+  `serie` varchar(100) NOT NULL,
+  `huella` varchar(64) NOT NULL,
+  `valido_desde` datetime NOT NULL,
+  `valido_hasta` datetime NOT NULL,
+  `subido_por` int(10) unsigned DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_certificados_tenant` (`tenant_id`),
+  CONSTRAINT `certificados_digitales_tenant_id_foreign` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 -- Tabla clientes
 CREATE TABLE `clientes` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
@@ -111,6 +131,53 @@ CREATE TABLE `configuracion` (
   CONSTRAINT `configuracion_ibfk_1` FOREIGN KEY (`empresa_id`) REFERENCES `empresas` (`id`),
   CONSTRAINT `fk_configuracion_tenant` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Tabla ecf_configuracion
+CREATE TABLE `ecf_configuracion` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `tenant_id` int(10) unsigned NOT NULL,
+  `ambiente` enum('TesteCF','CerteCF','eCF') NOT NULL DEFAULT 'TesteCF',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_ecf_config_tenant` (`tenant_id`),
+  CONSTRAINT `ecf_configuracion_tenant_id_foreign` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- Tabla ecf_emitidos
+CREATE TABLE `ecf_emitidos` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `tenant_id` int(10) unsigned NOT NULL,
+  `factura_id` int(10) unsigned NOT NULL,
+  `tipo_ecf` tinyint(3) unsigned NOT NULL,
+  `encf` varchar(13) NOT NULL,
+  `ecf_referencia_id` int(10) unsigned DEFAULT NULL,
+  `xml_firmado` mediumtext NOT NULL,
+  `codigo_seguridad` varchar(6) NOT NULL,
+  `fecha_firma` datetime NOT NULL,
+  `rnc_emisor` varchar(11) NOT NULL,
+  `rnc_comprador` varchar(11) DEFAULT NULL,
+  `fecha_emision` date NOT NULL,
+  `monto_total` decimal(12,2) NOT NULL,
+  `tasa_itbis` tinyint(3) unsigned NOT NULL,
+  `estado` enum('generado','enviado','en_proceso','aceptado','aceptado_condicional','rechazado','error') NOT NULL DEFAULT 'generado',
+  `track_id` varchar(100) DEFAULT NULL,
+  `mensaje_dgii` text DEFAULT NULL,
+  `intentos` int(10) unsigned NOT NULL DEFAULT 0,
+  `proximo_intento` datetime DEFAULT NULL,
+  `ultimo_intento` datetime DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_ecf_tenant_encf` (`tenant_id`,`encf`),
+  UNIQUE KEY `uq_ecf_factura_tipo` (`factura_id`,`tipo_ecf`),
+  KEY `ecf_emitidos_ecf_referencia_id_foreign` (`ecf_referencia_id`),
+  KEY `idx_ecf_cola` (`estado`,`proximo_intento`),
+  KEY `idx_ecf_tenant_fecha` (`tenant_id`,`created_at`),
+  CONSTRAINT `ecf_emitidos_ecf_referencia_id_foreign` FOREIGN KEY (`ecf_referencia_id`) REFERENCES `ecf_emitidos` (`id`),
+  CONSTRAINT `ecf_emitidos_factura_id_foreign` FOREIGN KEY (`factura_id`) REFERENCES `facturas` (`id`),
+  CONSTRAINT `ecf_emitidos_tenant_id_foreign` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Tabla empresas
 CREATE TABLE `empresas` (
@@ -398,19 +465,19 @@ CREATE TABLE `usuarios` (
 
 -- Datos de referencia: roles
 INSERT INTO `roles` (`id`, `nombre`, `descripcion`, `created_at`) VALUES
-  (1, 'admin', 'Acceso total al sistema', '2026-09-27 01:47:20.000'),
-  (2, 'facturador', 'Puede crear y emitir facturas', '2026-09-27 01:47:20.000'),
-  (3, 'visor', 'Solo puede consultar información', '2026-09-27 01:47:20.000');
+  (1, 'admin', 'Acceso total al sistema', '2026-09-27 02:45:40.000'),
+  (2, 'facturador', 'Puede crear y emitir facturas', '2026-09-27 02:45:40.000'),
+  (3, 'visor', 'Solo puede consultar información', '2026-09-27 02:45:40.000');
 
 -- Datos de referencia: tipos_servicio
 INSERT INTO `tipos_servicio` (`id`, `nombre`, `descripcion`, `activo`, `created_at`, `updated_at`, `tenant_id`) VALUES
-  (1, 'Instalación de rótulos y señalización', 'Servicio de instalación de materiales publicitarios y señalización', 1, '2026-09-27 01:47:20.000', '2026-09-27 01:47:20.000', 1),
-  (2, 'Impresión de materiales publicitarios', 'Impresión de banners, lonas, vinilos y materiales gráficos', 1, '2026-09-27 01:47:20.000', '2026-09-27 01:47:20.000', 1),
-  (3, 'Diseño gráfico', 'Creación y diseño de artes, logos y materiales gráficos', 1, '2026-09-27 01:47:20.000', '2026-09-27 01:47:20.000', 1),
-  (4, 'Alquiler de equipos', 'Renta de grúas, plataformas y equipos especiales para instalación', 1, '2026-09-27 01:47:20.000', '2026-09-27 01:47:20.000', 1),
-  (5, 'Venta de materiales', 'Venta al detalle de materiales: lonas, yaldas, vinilos y similares', 1, '2026-09-27 01:47:20.000', '2026-09-27 01:47:20.000', 1),
-  (6, 'Mano de obra', 'Servicios de instalación, montaje y trabajo manual', 1, '2026-09-27 01:47:20.000', '2026-09-27 01:47:20.000', 1),
-  (7, 'Servicio general', 'Servicio de naturaleza general', 1, '2026-09-27 01:47:20.000', '2026-09-27 01:47:20.000', 1);
+  (1, 'Instalación de rótulos y señalización', 'Servicio de instalación de materiales publicitarios y señalización', 1, '2026-09-27 02:45:40.000', '2026-09-27 02:45:40.000', 1),
+  (2, 'Impresión de materiales publicitarios', 'Impresión de banners, lonas, vinilos y materiales gráficos', 1, '2026-09-27 02:45:40.000', '2026-09-27 02:45:40.000', 1),
+  (3, 'Diseño gráfico', 'Creación y diseño de artes, logos y materiales gráficos', 1, '2026-09-27 02:45:40.000', '2026-09-27 02:45:40.000', 1),
+  (4, 'Alquiler de equipos', 'Renta de grúas, plataformas y equipos especiales para instalación', 1, '2026-09-27 02:45:40.000', '2026-09-27 02:45:40.000', 1),
+  (5, 'Venta de materiales', 'Venta al detalle de materiales: lonas, yaldas, vinilos y similares', 1, '2026-09-27 02:45:40.000', '2026-09-27 02:45:40.000', 1),
+  (6, 'Mano de obra', 'Servicios de instalación, montaje y trabajo manual', 1, '2026-09-27 02:45:40.000', '2026-09-27 02:45:40.000', 1),
+  (7, 'Servicio general', 'Servicio de naturaleza general', 1, '2026-09-27 02:45:40.000', '2026-09-27 02:45:40.000', 1);
 
 -- Datos de referencia: unidades_medida
 INSERT INTO `unidades_medida` (`id`, `nombre`, `abreviatura`, `activo`, `tenant_id`) VALUES
@@ -430,6 +497,6 @@ INSERT INTO `unidades_medida` (`id`, `nombre`, `abreviatura`, `activo`, `tenant_
 
 -- Datos de referencia: configuracion
 INSERT INTO `configuracion` (`id`, `empresa_id`, `factura_ultimo_numero`, `factura_prefijo`, `moneda`, `itbis_porcentaje`, `ret_itbis_porcentaje`, `ret_isr_porcentaje`, `nfc_alerta_porcentaje`, `updated_at`, `tenant_id`) VALUES
-  (1, NULL, 0, 'F', 'DOP', '18.00', '100.00', '10.00', 80, '2026-09-27 01:47:20.000', 1);
+  (1, NULL, 0, 'F', 'DOP', '18.00', '100.00', '10.00', 80, '2026-09-27 02:45:40.000', 1);
 
 SET FOREIGN_KEY_CHECKS = 1;

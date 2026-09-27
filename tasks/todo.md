@@ -61,7 +61,7 @@ Siguientes módulos: `subscription` → `onboarding` → `ecf-signing` → `ecf-
 - [x] E8. Representación impresa con QR y código de seguridad
 - [x] E9. Nota de crédito electrónica (34)
 - [x] E10. Vista de e-CF en el frontend
-- [ ] E11. Esquema, documentación y cierre
+- [x] E11. Esquema, documentación y cierre
 
 ### Checkpoint (fin de los módulos e-CF)
 - [ ] Criterios de `SPEC-ecf-signing.md` y `SPEC-ecf-connector.md` cumplidos; suite verde
