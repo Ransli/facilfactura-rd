@@ -58,7 +58,7 @@ Siguientes módulos: `subscription` → `onboarding` → `ecf-signing` → `ecf-
 - [x] E5. Emisión de facturas `E31/E32` con e-NCF y XML firmado
 - [x] E6. Cliente de la DGII y simulador
 - [x] E7. Cola de envío con reintentos
-- [ ] E8. Representación impresa con QR y código de seguridad
+- [x] E8. Representación impresa con QR y código de seguridad
 - [ ] E9. Nota de crédito electrónica (34)
 - [ ] E10. Vista de e-CF en el frontend
 - [ ] E11. Esquema, documentación y cierre

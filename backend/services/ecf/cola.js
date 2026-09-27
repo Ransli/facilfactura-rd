@@ -105,17 +105,18 @@ async function procesarFila(db, fila, contexto, ahora, resumen) {
 /**
  * Procesa los e-CF que ya les toca (su `proximo_intento` llegó), de todas las empresas.
  * @param db     pool de mysql2
- * @param opts   { ahora, baseUrl, limite }  (ahora y baseUrl existen para las pruebas)
+ * @param opts   { tenantId?, limite?, ahora?, baseUrl? }  tenantId limita el trabajo a una empresa; ahora y baseUrl existen para las pruebas
  * @returns      { procesados, enviados, aceptados, rechazados, reintentos, errores }
  */
-export async function procesarCola(db, { ahora = new Date(), baseUrl, limite = 25 } = {}) {
+export async function procesarCola(db, { tenantId, ahora = new Date(), baseUrl, limite = 25 } = {}) {
   const resumen = { procesados: 0, enviados: 0, aceptados: 0, rechazados: 0, reintentos: 0, errores: 0 }
   const [pendientes] = await db.query(
     `SELECT id, tenant_id, estado, track_id, intentos, encf, rnc_emisor, xml_firmado
      FROM ecf_emitidos
      WHERE estado IN (${ESTADOS_PENDIENTES.map(() => '?').join(', ')}) AND proximo_intento IS NOT NULL AND proximo_intento <= ?
+       ${tenantId ? 'AND tenant_id = ?' : ''}
      ORDER BY proximo_intento, id LIMIT ?`,
-    [...ESTADOS_PENDIENTES, ahora, limite])
+    [...ESTADOS_PENDIENTES, ahora, ...(tenantId ? [tenantId] : []), limite])
 
   const contextos = new Map()
   for (const fila of pendientes) {
