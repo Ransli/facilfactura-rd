@@ -6,6 +6,7 @@ import { fileURLToPath } from 'url'
 import pool from '../config/database.js'
 import { verificarToken, soloAdmin } from '../middleware/auth.js'
 import { agregarTenantId } from '../middleware/tenant.js'
+import { verificarSuscripcion } from '../middleware/suscripcion.js'
 
 const router = Router()
 
@@ -31,7 +32,7 @@ const upload = multer({
   },
 })
 
-router.use(verificarToken, agregarTenantId)
+router.use(verificarToken, agregarTenantId, verificarSuscripcion)
 
 // GET /api/configuracion — configuración fiscal + datos de empresa + métodos de pago
 router.get('/', async (req, res) => {

@@ -2,9 +2,10 @@ import { Router } from 'express'
 import pool from '../config/database.js'
 import { verificarToken, soloAdmin } from '../middleware/auth.js'
 import { agregarTenantId } from '../middleware/tenant.js'
+import { verificarSuscripcion } from '../middleware/suscripcion.js'
 
 const router = Router()
-router.use(verificarToken, agregarTenantId)
+router.use(verificarToken, agregarTenantId, verificarSuscripcion)
 
 // GET /api/tipos-servicio?buscar=texto
 router.get('/', async (req, res) => {

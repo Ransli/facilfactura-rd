@@ -2,9 +2,10 @@ import { Router } from 'express'
 import pool from '../config/database.js'
 import { verificarToken } from '../middleware/auth.js'
 import { agregarTenantId } from '../middleware/tenant.js'
+import { verificarSuscripcion } from '../middleware/suscripcion.js'
 
 const router = Router()
-router.use(verificarToken, agregarTenantId)
+router.use(verificarToken, agregarTenantId, verificarSuscripcion)
 
 // Las facturas anuladas no suman al facturado: solo las emitidas cuentan como ingreso.
 const EMITIDA = `estado = 'emitida'`

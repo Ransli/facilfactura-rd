@@ -2,10 +2,11 @@ import { Router } from 'express'
 import pool from '../config/database.js'
 import { verificarToken, soloAdmin } from '../middleware/auth.js'
 import { agregarTenantId } from '../middleware/tenant.js'
+import { verificarSuscripcion } from '../middleware/suscripcion.js'
 import { primeraReferenciaAjena, esReferenciaInexistente, mensajeReferencia } from '../utils/referencias.js'
 
 const router = Router()
-router.use(verificarToken, agregarTenantId)
+router.use(verificarToken, agregarTenantId, verificarSuscripcion)
 
 const SQL_PRECIOS = `
   SELECT ap.*, u.nombre AS unidad_nombre, u.abreviatura

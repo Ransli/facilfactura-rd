@@ -17,6 +17,7 @@ import configuracionRoutes from './routes/configuracion.js'
 import facturasRoutes from './routes/facturas.js'
 import usuariosRoutes from './routes/usuarios.js'
 import dashboardRoutes from './routes/dashboard.js'
+import suscripcionRoutes from './routes/suscripcion.js'
 
 dotenv.config()
 
@@ -50,6 +51,7 @@ app.use('/api/configuracion', configuracionRoutes)
 app.use('/api/facturas', facturasRoutes)
 app.use('/api/usuarios', usuariosRoutes)
 app.use('/api/dashboard', dashboardRoutes)
+app.use('/api/suscripcion', suscripcionRoutes)
 
 // ── Health check ──────────────────────────────────────────────
 app.get('/api/health', (_req, res) => {

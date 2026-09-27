@@ -3,12 +3,13 @@ import bcrypt from 'bcryptjs'
 import pool from '../config/database.js'
 import { verificarToken, soloAdmin } from '../middleware/auth.js'
 import { agregarTenantId } from '../middleware/tenant.js'
+import { verificarSuscripcion } from '../middleware/suscripcion.js'
 import { esReferenciaInexistente, mensajeReferencia } from '../utils/referencias.js'
 
 const router = Router()
 
 // La gestión de usuarios es exclusiva del administrador
-router.use(verificarToken, agregarTenantId, soloAdmin)
+router.use(verificarToken, agregarTenantId, verificarSuscripcion, soloAdmin)
 
 // GET /api/usuarios/roles — roles disponibles para el selector
 router.get('/roles', async (_req, res) => {
