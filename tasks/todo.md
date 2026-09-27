@@ -4,8 +4,8 @@ Plan y detalle: `tasks/plan.md`. Marcar cada tarea al terminar (criterios cumpli
 Un commit por tarea, en inglés, a nombre de Ransli, sin `Co-Authored-By`.
 
 ## Fase 1: base de datos
-- [ ] T1. Migraciones Knex y scripts `db:*` (commit + ciclo create/migrate/rollback)
-- [ ] T2. Copia de datos de la v1 y prueba de que la v1 no cambió
+- [x] T1. Migraciones Knex y scripts `db:*` (commit + ciclo create/migrate/rollback)
+- [x] T2. Copia de datos de la v1 y prueba de que la v1 no cambió
 
 ## Fase 2: arnés de pruebas
 - [ ] T3. Extraer `app.js` de `index.js`
