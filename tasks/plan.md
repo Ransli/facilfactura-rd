@@ -60,3 +60,24 @@ verde, una prueba de aislamiento que falló antes del cambio, y commit atómico 
 ## Preguntas abiertas
 
 - Ninguna.
+
+
+---
+
+# Módulo `subscription` (spec: `docs/escalacion/SPEC-subscription.md`)
+
+## Decisiones
+
+- **Lógica de estado pura** (`evaluarEstado`), probada sin base de datos; el middleware solo la aplica.
+- **Bloqueo = solo lectura**, nunca pérdida de datos (propuesta V.3).
+- **Servicios sin rutas de administración:** `gestion.js` queda en el repo; las rutas HTTP que los usan viven en la consola master (paquete aparte).
+
+## Tareas
+
+| Tarea | Alcance | Archivos principales |
+|---|---|---|
+| S1 | Migración de las 3 tablas + `evaluarEstado` con pruebas unitarias | migración, `services/suscripcion/estado.js` |
+| S2 | Middleware `verificarSuscripcion` en todas las rutas + `GET /mi-suscripcion` | `middleware/suscripcion.js`, 11 rutas, `routes/suscripcion.js` |
+| S3 | Límites: `verificarLimite`, `GET /limites`, aplicado a usuarios y clientes | `services/suscripcion/limites.js`, `middleware/suscripcion.js` |
+| S4 | Servicios de gestión con historial (`registrarPago`, `cambiarPlan`, `suspender`…) y `GET /planes` público | `services/suscripcion/gestion.js` |
+| S5 | Esquema regenerado y cierre | `schema-saas.sql` |
