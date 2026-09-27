@@ -85,9 +85,17 @@ cd facilfactura-rd
 ```
 
 ### 2. Crear la base de datos
+La plataforma usa la base `facilfactura_saas`, que se construye con migraciones (Knex):
 ```bash
-mysql -u root -p < database/schema.sql
+cd backend
+npm run db:create      # crea la base vacía
+npm run db:migrate     # aplica las migraciones de database/migrations/
+npm run db:copy-v1     # opcional: copia los datos de la v1 (facilfactura_db) si la tienes
+cd ..
 ```
+El esquema completo también está en un solo archivo, `database/schema-saas.sql`
+(`mysql -u root -p < database/schema-saas.sql`). Se genera con `npm run db:dump-schema`; no se edita a mano.
+`database/schema.sql` es el esquema original de la v1 y se conserva como referencia histórica.
 
 ### 3. Configurar el backend
 ```bash
@@ -129,6 +137,13 @@ npm run dev
 - API:      http://localhost:3002/api
 
 > También puedes ejecutarlos por separado con `npm run dev:backend` y `npm run dev:frontend`.
+
+### 7. Ejecutar las pruebas
+```bash
+npm test --prefix backend
+```
+Crea y migra una base propia (`facilfactura_test`) y ejecuta las pruebas de integración de la API. Nunca toca
+`facilfactura_saas`. GitHub Actions corre las mismas pruebas y la compilación del frontend en cada push.
 
 ## Capturas de pantalla
 
@@ -180,6 +195,13 @@ Validación y formato automático de RNC (9 dígitos) y cédula (11 dígitos).
 ### Inicio de sesión
 
 ![Login](docs/capturas/01-login.png)
+
+## Escalación a plataforma SaaS (Seminario de Proyecto II)
+
+Este repositorio evoluciona de un sistema de una sola empresa (v1) a una plataforma multi-tenant con
+facturación electrónica (e-CF) y contabilidad. La documentación del trabajo está en `docs/escalacion/`:
+el mapa de capacidades, la especificación de cada módulo y la guía para el equipo. El plan de tareas activo
+está en `tasks/`.
 
 ## Autores
 

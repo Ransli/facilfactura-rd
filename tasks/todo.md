@@ -36,7 +36,7 @@ Un commit por tarea, en inglés, a nombre de Ransli, sin `Co-Authored-By`.
 - [x] T13. `database/schema-saas.sql` generado con `db:dump-schema`
 - [x] T14. Kit de Carlos v0 en `docs/escalacion/carlos/`
 - [x] T15. GitHub Actions con MariaDB
-- [ ] T16. Cierre: README, contexto, memoria y push a `master`
+- [x] T16. Cierre: README, contexto, memoria y push a `master`
 
 ### Checkpoint D (fin del módulo)
 - [ ] Criterios 1 a 5 de la spec cumplidos, CI verde, kit de Carlos publicado
