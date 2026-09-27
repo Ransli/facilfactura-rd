@@ -17,6 +17,7 @@
     "db:dump-schema": "node scripts/dump-schema.js"
   },
   "dependencies": {
+    "@xmldom/xmldom": "^0.9.12",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
@@ -28,6 +29,7 @@
     "mysql2": "^3.10.1",
     "node-forge": "^1.4.0",
     "qrcode": "^1.5.4",
-    "xml-crypto": "^6.3.2"
+    "xml-crypto": "^6.3.2",
+    "xpath": "^0.0.34"
   }
 }
