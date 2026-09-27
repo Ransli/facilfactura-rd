@@ -2,12 +2,13 @@ import { Router } from 'express'
 import bcrypt from 'bcryptjs'
 import pool from '../config/database.js'
 import { verificarToken, soloAdmin } from '../middleware/auth.js'
+import { agregarTenantId } from '../middleware/tenant.js'
 import { esReferenciaInexistente, mensajeReferencia } from '../utils/referencias.js'
 
 const router = Router()
 
 // La gestión de usuarios es exclusiva del administrador
-router.use(verificarToken, soloAdmin)
+router.use(verificarToken, agregarTenantId, soloAdmin)
 
 // GET /api/usuarios/roles — roles disponibles para el selector
 router.get('/roles', async (_req, res) => {
@@ -28,8 +29,8 @@ router.get('/', async (req, res) => {
       SELECT u.id, u.nombre, u.email, u.rol_id, r.nombre AS rol, u.activo, u.ultimo_acceso, u.created_at
       FROM usuarios u
       JOIN roles r ON r.id = u.rol_id
-      WHERE 1 = 1`
-    const params = []
+      WHERE u.tenant_id = ?`
+    const params = [req.tenant_id]
     if (buscar) {
       sql += ` AND (u.nombre LIKE ? OR u.email LIKE ?)`
       params.push(`%${buscar}%`, `%${buscar}%`)
@@ -57,13 +58,13 @@ router.post('/', async (req, res) => {
   try {
     const password_hash = await bcrypt.hash(password, 10)
     const [result] = await pool.query(
-      `INSERT INTO usuarios (nombre, email, password_hash, rol_id) VALUES (?, ?, ?, ?)`,
-      [nombre, email, password_hash, rol_id]
+      `INSERT INTO usuarios (tenant_id, nombre, email, password_hash, rol_id) VALUES (?, ?, ?, ?, ?)`,
+      [req.tenant_id, nombre, email, password_hash, rol_id]
     )
     const [rows] = await pool.query(
       `SELECT u.id, u.nombre, u.email, u.rol_id, r.nombre AS rol, u.activo
-       FROM usuarios u JOIN roles r ON r.id = u.rol_id WHERE u.id = ?`,
-      [result.insertId]
+       FROM usuarios u JOIN roles r ON r.id = u.rol_id WHERE u.id = ? AND u.tenant_id = ?`,
+      [result.insertId, req.tenant_id]
     )
     res.status(201).json({ ok: true, data: rows[0] })
   } catch (err) {
@@ -86,26 +87,29 @@ router.put('/:id', async (req, res) => {
   }
 
   try {
+    const [existe] = await pool.query('SELECT id FROM usuarios WHERE id = ? AND tenant_id = ?', [req.params.id, req.tenant_id])
+    if (!existe[0]) return res.status(404).json({ ok: false, mensaje: 'Usuario no encontrado' })
+
     if (password) {
       if (String(password).length < 6) {
         return res.status(400).json({ ok: false, mensaje: 'La contraseña debe tener al menos 6 caracteres' })
       }
       const password_hash = await bcrypt.hash(password, 10)
       await pool.query(
-        `UPDATE usuarios SET nombre=?, email=?, rol_id=?, activo=?, password_hash=?, updated_at=NOW() WHERE id=?`,
-        [nombre, email, rol_id, activo ?? 1, password_hash, req.params.id]
+        `UPDATE usuarios SET nombre=?, email=?, rol_id=?, activo=?, password_hash=?, updated_at=NOW() WHERE id=? AND tenant_id=?`,
+        [nombre, email, rol_id, activo ?? 1, password_hash, req.params.id, req.tenant_id]
       )
     } else {
       await pool.query(
-        `UPDATE usuarios SET nombre=?, email=?, rol_id=?, activo=?, updated_at=NOW() WHERE id=?`,
-        [nombre, email, rol_id, activo ?? 1, req.params.id]
+        `UPDATE usuarios SET nombre=?, email=?, rol_id=?, activo=?, updated_at=NOW() WHERE id=? AND tenant_id=?`,
+        [nombre, email, rol_id, activo ?? 1, req.params.id, req.tenant_id]
       )
     }
 
     const [rows] = await pool.query(
       `SELECT u.id, u.nombre, u.email, u.rol_id, r.nombre AS rol, u.activo
-       FROM usuarios u JOIN roles r ON r.id = u.rol_id WHERE u.id = ?`,
-      [req.params.id]
+       FROM usuarios u JOIN roles r ON r.id = u.rol_id WHERE u.id = ? AND u.tenant_id = ?`,
+      [req.params.id, req.tenant_id]
     )
     res.json({ ok: true, data: rows[0] })
   } catch (err) {
@@ -126,7 +130,10 @@ router.delete('/:id', async (req, res) => {
     return res.status(400).json({ ok: false, mensaje: 'No puedes desactivar tu propia cuenta' })
   }
   try {
-    await pool.query('UPDATE usuarios SET activo = 0 WHERE id = ?', [req.params.id])
+    const [existe] = await pool.query('SELECT id FROM usuarios WHERE id = ? AND tenant_id = ?', [req.params.id, req.tenant_id])
+    if (!existe[0]) return res.status(404).json({ ok: false, mensaje: 'Usuario no encontrado' })
+
+    await pool.query('UPDATE usuarios SET activo = 0 WHERE id = ? AND tenant_id = ?', [req.params.id, req.tenant_id])
     res.json({ ok: true, mensaje: 'Usuario desactivado' })
   } catch (err) {
     console.error(err)

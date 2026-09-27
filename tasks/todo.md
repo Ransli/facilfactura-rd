@@ -12,7 +12,7 @@ Plan: `tasks/plan.md`. Un commit por tarea, en inglés, a nombre de Ransli, sin 
 - [x] T4. Aislamiento de categorías, unidades de medida, tipos de servicio y artículos
 - [x] T5. Aislamiento de configuración, métodos de pago y secuencias NCF
 - [x] T6. Aislamiento de facturas (numeración por empresa) y panel
-- [ ] T7. Aislamiento de usuarios
+- [x] T7. Aislamiento de usuarios
 - [ ] T8. Quitar los `DEFAULT 1`, regenerar `schema-saas.sql` y cerrar el módulo
 
 ### Checkpoint 2 (fin de `tenancy`)
