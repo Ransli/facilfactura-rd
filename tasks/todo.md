@@ -38,7 +38,7 @@ Siguientes módulos: `subscription` → `onboarding` → `ecf-signing` → `ecf-
 
 # Módulo `onboarding`
 
-- [ ] O1. Paso 1 del alta: crear la empresa y aprovisionarla, con token de registro
+- [x] O1. Paso 1 del alta: crear la empresa y aprovisionarla, con token de registro
 - [ ] O2. Paso 2: elegir plan
 - [ ] O3. Paso 3: crear el administrador y entregar la sesión
 - [ ] O4. Asistente de registro en el frontend
