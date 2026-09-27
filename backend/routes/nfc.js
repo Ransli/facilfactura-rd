@@ -1,19 +1,24 @@
 import { Router } from 'express'
 import pool from '../config/database.js'
 import { verificarToken, soloAdmin } from '../middleware/auth.js'
+import { agregarTenantId } from '../middleware/tenant.js'
 
 const router = Router()
-router.use(verificarToken)
+router.use(verificarToken, agregarTenantId)
 
-// GET /api/nfc — lista todas las secuencias
+const CAMPOS_USO = `*,
+        ROUND((ultimo_usado / hasta) * 100, 1) AS porcentaje_usado,
+        (hasta - ultimo_usado) AS disponibles`
+
+// GET /api/nfc — lista todas las secuencias de la empresa
 router.get('/', async (req, res) => {
   try {
     const [rows] = await pool.query(
-      `SELECT *,
-        ROUND((ultimo_usado / hasta) * 100, 1) AS porcentaje_usado,
-        (hasta - ultimo_usado) AS disponibles
+      `SELECT ${CAMPOS_USO}
        FROM nfc_secuencias
-       ORDER BY activo DESC, id DESC`
+       WHERE tenant_id = ?
+       ORDER BY activo DESC, id DESC`,
+      [req.tenant_id]
     )
     res.json({ ok: true, data: rows })
   } catch (err) {
@@ -22,16 +27,15 @@ router.get('/', async (req, res) => {
   }
 })
 
-// GET /api/nfc/activas — todas las secuencias vigentes, una por tipo
+// GET /api/nfc/activas — todas las secuencias vigentes de la empresa, una por tipo
 router.get('/activas', async (req, res) => {
   try {
     const [rows] = await pool.query(
-      `SELECT *,
-        ROUND((ultimo_usado / hasta) * 100, 1) AS porcentaje_usado,
-        (hasta - ultimo_usado) AS disponibles
+      `SELECT ${CAMPOS_USO}
        FROM nfc_secuencias
-       WHERE activo = 1
-       ORDER BY tipo_ncf`
+       WHERE tenant_id = ? AND activo = 1
+       ORDER BY tipo_ncf`,
+      [req.tenant_id]
     )
     res.json({ ok: true, data: rows })
   } catch (err) {
@@ -46,14 +50,12 @@ router.get('/activa', async (req, res) => {
   const { tipo } = req.query
   try {
     const [rows] = await pool.query(
-      `SELECT *,
-        ROUND((ultimo_usado / hasta) * 100, 1) AS porcentaje_usado,
-        (hasta - ultimo_usado) AS disponibles
+      `SELECT ${CAMPOS_USO}
        FROM nfc_secuencias
-       WHERE activo = 1 ${tipo ? 'AND tipo_ncf = ?' : ''}
+       WHERE tenant_id = ? AND activo = 1 ${tipo ? 'AND tipo_ncf = ?' : ''}
        ORDER BY tipo_ncf
        LIMIT 1`,
-      tipo ? [tipo] : []
+      tipo ? [req.tenant_id, tipo] : [req.tenant_id]
     )
 
     if (!rows[0]) {
@@ -97,25 +99,31 @@ router.post('/', soloAdmin, async (req, res) => {
 
   const alerta_desde = Math.floor(Number(hasta) * 0.8)
 
+  const conn = await pool.getConnection()
   try {
-    // Solo una secuencia vigente por tipo: registrar un B01 nuevo jubila el B01
-    // anterior, pero deja intactos el B02, el B15 y los demás.
-    await pool.query(
-      `UPDATE nfc_secuencias SET activo = 0 WHERE activo = 1 AND tipo_ncf = ?`,
-      [tipo_ncf]
+    await conn.beginTransaction()
+    // Solo una secuencia vigente por tipo y por empresa: registrar un B01 nuevo jubila el B01
+    // anterior de ESTA empresa, pero deja intactos el B02, el B15 y los de las demás empresas.
+    await conn.query(
+      `UPDATE nfc_secuencias SET activo = 0 WHERE tenant_id = ? AND activo = 1 AND tipo_ncf = ?`,
+      [req.tenant_id, tipo_ncf]
     )
 
-    const [result] = await pool.query(
-      `INSERT INTO nfc_secuencias (tipo_ncf, descripcion, desde, hasta, ultimo_usado, alerta_desde, fecha_vencimiento, activo)
-       VALUES (?, ?, ?, ?, 0, ?, ?, 1)`,
-      [tipo_ncf, descripcion || null, Number(desde), Number(hasta), alerta_desde, fecha_vencimiento || null]
+    const [result] = await conn.query(
+      `INSERT INTO nfc_secuencias (tenant_id, tipo_ncf, descripcion, desde, hasta, ultimo_usado, alerta_desde, fecha_vencimiento, activo)
+       VALUES (?, ?, ?, ?, ?, 0, ?, ?, 1)`,
+      [req.tenant_id, tipo_ncf, descripcion || null, Number(desde), Number(hasta), alerta_desde, fecha_vencimiento || null]
     )
+    await conn.commit()
 
-    const [rows] = await pool.query('SELECT * FROM nfc_secuencias WHERE id = ?', [result.insertId])
+    const [rows] = await pool.query('SELECT * FROM nfc_secuencias WHERE id = ? AND tenant_id = ?', [result.insertId, req.tenant_id])
     res.status(201).json({ ok: true, data: rows[0] })
   } catch (err) {
+    await conn.rollback()
     console.error(err)
     res.status(500).json({ ok: false, mensaje: 'Error del servidor' })
+  } finally {
+    conn.release()
   }
 })
 
@@ -124,14 +132,17 @@ router.put('/:id', soloAdmin, async (req, res) => {
   const { tipo_ncf, descripcion, desde, hasta, alerta_desde, fecha_vencimiento, activo } = req.body
 
   try {
+    const [existe] = await pool.query('SELECT id FROM nfc_secuencias WHERE id = ? AND tenant_id = ?', [req.params.id, req.tenant_id])
+    if (!existe[0]) return res.status(404).json({ ok: false, mensaje: 'Secuencia no encontrada' })
+
     await pool.query(
       `UPDATE nfc_secuencias SET tipo_ncf=?, descripcion=?, desde=?, hasta=?,
-       alerta_desde=?, fecha_vencimiento=?, activo=?, updated_at=NOW() WHERE id=?`,
+       alerta_desde=?, fecha_vencimiento=?, activo=?, updated_at=NOW() WHERE id=? AND tenant_id=?`,
       [tipo_ncf, descripcion || null, desde, hasta,
        alerta_desde || Math.floor(Number(hasta) * 0.8),
-       fecha_vencimiento || null, activo ?? 1, req.params.id]
+       fecha_vencimiento || null, activo ?? 1, req.params.id, req.tenant_id]
     )
-    const [rows] = await pool.query('SELECT * FROM nfc_secuencias WHERE id = ?', [req.params.id])
+    const [rows] = await pool.query('SELECT * FROM nfc_secuencias WHERE id = ? AND tenant_id = ?', [req.params.id, req.tenant_id])
     res.json({ ok: true, data: rows[0] })
   } catch (err) {
     console.error(err)

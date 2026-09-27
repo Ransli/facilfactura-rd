@@ -1,15 +1,17 @@
 import { Router } from 'express'
 import pool from '../config/database.js'
 import { verificarToken, soloAdmin } from '../middleware/auth.js'
+import { agregarTenantId } from '../middleware/tenant.js'
+import { primeraReferenciaAjena } from '../utils/referencias.js'
 
 const router = Router()
-router.use(verificarToken)
+router.use(verificarToken, agregarTenantId)
 
-// GET /api/metodos-pago — métodos de la empresa configurada
-router.get('/', async (_req, res) => {
+// GET /api/metodos-pago — métodos de pago de la empresa
+router.get('/', async (req, res) => {
   try {
     const [rows] = await pool.query(
-      `SELECT * FROM metodos_pago WHERE activo = 1 ORDER BY orden, id`
+      `SELECT * FROM metodos_pago WHERE tenant_id = ? AND activo = 1 ORDER BY orden, id`, [req.tenant_id]
     )
     res.json({ ok: true, data: rows })
   } catch (err) {
@@ -26,13 +28,16 @@ router.post('/', soloAdmin, async (req, res) => {
   }
 
   try {
+    const ajena = await primeraReferenciaAjena(pool, req.tenant_id, [{ columna: 'empresa_id', id: empresa_id }])
+    if (ajena) return res.status(400).json({ ok: false, mensaje: ajena })
+
     const [result] = await pool.query(
-      `INSERT INTO metodos_pago (empresa_id, tipo, banco, numero_cuenta, tipo_cuenta, titular, orden)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [empresa_id, tipo, banco || null, numero_cuenta || null,
+      `INSERT INTO metodos_pago (tenant_id, empresa_id, tipo, banco, numero_cuenta, tipo_cuenta, titular, orden)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [req.tenant_id, empresa_id, tipo, banco || null, numero_cuenta || null,
        tipo_cuenta || 'corriente', titular || null, orden || 1]
     )
-    const [rows] = await pool.query('SELECT * FROM metodos_pago WHERE id = ?', [result.insertId])
+    const [rows] = await pool.query('SELECT * FROM metodos_pago WHERE id = ? AND tenant_id = ?', [result.insertId, req.tenant_id])
     res.status(201).json({ ok: true, data: rows[0] })
   } catch (err) {
     console.error(err)
@@ -45,13 +50,16 @@ router.put('/:id', soloAdmin, async (req, res) => {
   const { tipo, banco, numero_cuenta, tipo_cuenta, titular, orden } = req.body
 
   try {
+    const [existe] = await pool.query('SELECT id FROM metodos_pago WHERE id = ? AND tenant_id = ?', [req.params.id, req.tenant_id])
+    if (!existe[0]) return res.status(404).json({ ok: false, mensaje: 'Método de pago no encontrado' })
+
     await pool.query(
       `UPDATE metodos_pago SET tipo=?, banco=?, numero_cuenta=?, tipo_cuenta=?, titular=?, orden=?, updated_at=NOW()
-       WHERE id=?`,
+       WHERE id=? AND tenant_id=?`,
       [tipo, banco || null, numero_cuenta || null, tipo_cuenta || 'corriente',
-       titular || null, orden || 1, req.params.id]
+       titular || null, orden || 1, req.params.id, req.tenant_id]
     )
-    const [rows] = await pool.query('SELECT * FROM metodos_pago WHERE id = ?', [req.params.id])
+    const [rows] = await pool.query('SELECT * FROM metodos_pago WHERE id = ? AND tenant_id = ?', [req.params.id, req.tenant_id])
     res.json({ ok: true, data: rows[0] })
   } catch (err) {
     console.error(err)
@@ -62,7 +70,10 @@ router.put('/:id', soloAdmin, async (req, res) => {
 // DELETE /api/metodos-pago/:id (soft delete)
 router.delete('/:id', soloAdmin, async (req, res) => {
   try {
-    await pool.query('UPDATE metodos_pago SET activo = 0 WHERE id = ?', [req.params.id])
+    const [existe] = await pool.query('SELECT id FROM metodos_pago WHERE id = ? AND tenant_id = ?', [req.params.id, req.tenant_id])
+    if (!existe[0]) return res.status(404).json({ ok: false, mensaje: 'Método de pago no encontrado' })
+
+    await pool.query('UPDATE metodos_pago SET activo = 0 WHERE id = ? AND tenant_id = ?', [req.params.id, req.tenant_id])
     res.json({ ok: true, mensaje: 'Método de pago eliminado' })
   } catch (err) {
     console.error(err)
