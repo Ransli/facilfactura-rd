@@ -1,10 +1,11 @@
 import { Router } from 'express'
 import pool from '../config/database.js'
 import { verificarToken, soloFacturador, soloAdmin } from '../middleware/auth.js'
-import { esReferenciaInexistente, mensajeReferencia } from '../utils/referencias.js'
+import { agregarTenantId } from '../middleware/tenant.js'
+import { primeraReferenciaAjena, esReferenciaInexistente, mensajeReferencia } from '../utils/referencias.js'
 
 const router = Router()
-router.use(verificarToken)
+router.use(verificarToken, agregarTenantId)
 
 const round2 = (n) => Math.round((Number(n) + Number.EPSILON) * 100) / 100
 
@@ -31,6 +32,27 @@ function motivoItemInvalido(items) {
   return null
 }
 
+// Referencias de la factura que deben existir dentro de la empresa (sin repetir consultas por el mismo id)
+function referenciasDeLaFactura({ cliente_id, empresa_id, tipo_servicio_id, items }) {
+  const vistas = new Set()
+  const lista = []
+  const agregar = (columna, id) => {
+    if (id === undefined || id === null || id === '') return
+    const clave = `${columna}:${id}`
+    if (vistas.has(clave)) return
+    vistas.add(clave)
+    lista.push({ columna, id })
+  }
+  agregar('cliente_id', cliente_id)
+  agregar('empresa_id', empresa_id)
+  agregar('tipo_servicio_id', tipo_servicio_id)
+  for (const i of items) {
+    agregar('articulo_id', i.articulo_id)
+    agregar('unidad_medida_id', i.unidad_medida_id)
+  }
+  return lista
+}
+
 // GET /api/facturas?estado=&cliente_id=&desde=&hasta=&buscar=
 router.get('/', async (req, res) => {
   const { estado, cliente_id, desde, hasta, buscar } = req.query
@@ -39,8 +61,8 @@ router.get('/', async (req, res) => {
       SELECT f.*, c.nombre AS cliente_nombre, c.rnc AS cliente_rnc
       FROM facturas f
       JOIN clientes c ON c.id = f.cliente_id
-      WHERE 1 = 1`
-    const params = []
+      WHERE f.tenant_id = ?`
+    const params = [req.tenant_id]
 
     if (estado)     { sql += ` AND f.estado = ?`;     params.push(estado) }
     if (cliente_id) { sql += ` AND f.cliente_id = ?`; params.push(cliente_id) }
@@ -69,8 +91,8 @@ router.get('/:id', async (req, res) => {
        JOIN clientes c ON c.id = f.cliente_id
        LEFT JOIN empresas e ON e.id = f.empresa_id
        LEFT JOIN tipos_servicio ts ON ts.id = f.tipo_servicio_id
-       WHERE f.id = ?`,
-      [req.params.id]
+       WHERE f.id = ? AND f.tenant_id = ?`,
+      [req.params.id, req.tenant_id]
     )
     if (!rows[0]) return res.status(404).json({ ok: false, mensaje: 'Factura no encontrada' })
 
@@ -82,9 +104,9 @@ router.get('/:id', async (req, res) => {
        JOIN articulos a ON a.id = fi.articulo_id
        JOIN categorias cat ON cat.id = a.categoria_id
        JOIN unidades_medida u ON u.id = fi.unidad_medida_id
-       WHERE fi.factura_id = ?
+       WHERE fi.factura_id = ? AND fi.tenant_id = ?
        ORDER BY fi.orden, fi.id`,
-      [req.params.id]
+      [req.params.id, req.tenant_id]
     )
     rows[0].items = items
 
@@ -110,19 +132,23 @@ router.post('/', soloFacturador, async (req, res) => {
 
   const conn = await pool.getConnection()
   try {
+    // Todo lo que la factura referencia debe ser de esta empresa (una clave foránea sola no lo garantiza)
+    const ajena = await primeraReferenciaAjena(conn, req.tenant_id, referenciasDeLaFactura(req.body))
+    if (ajena) return res.status(400).json({ ok: false, mensaje: ajena })
+
     await conn.beginTransaction()
 
     // Orden de bloqueo fijo (secuencia NCF y luego configuración) para toda emisión: así dos
-    // emisiones simultáneas se turnan en vez de leer el mismo correlativo o interbloquearse.
+    // emisiones simultáneas de la misma empresa se turnan en vez de leer el mismo correlativo o interbloquearse.
 
     // 1. Secuencia NCF del tipo pedido (bloqueada para la transacción).
     // Sin tipo_ncf se toma la primera vigente, que es como se comportaba antes.
     const [seqRows] = await conn.query(
       `SELECT * FROM nfc_secuencias
-       WHERE activo = 1 ${tipo_ncf ? 'AND tipo_ncf = ?' : ''}
+       WHERE tenant_id = ? AND activo = 1 ${tipo_ncf ? 'AND tipo_ncf = ?' : ''}
        ORDER BY tipo_ncf
        LIMIT 1 FOR UPDATE`,
-      tipo_ncf ? [tipo_ncf] : []
+      tipo_ncf ? [req.tenant_id, tipo_ncf] : [req.tenant_id]
     )
     const seq = seqRows[0]
     if (!seq) {
@@ -135,8 +161,8 @@ router.post('/', soloFacturador, async (req, res) => {
       })
     }
 
-    // 2. Configuración fiscal y correlativo de facturas, leídos con bloqueo tras la secuencia
-    const [cfgRows] = await conn.query('SELECT * FROM configuracion ORDER BY id LIMIT 1 FOR UPDATE')
+    // 2. Configuración fiscal y correlativo de facturas de la empresa, leídos con bloqueo tras la secuencia
+    const [cfgRows] = await conn.query('SELECT * FROM configuracion WHERE tenant_id = ? LIMIT 1 FOR UPDATE', [req.tenant_id])
     const config = cfgRows[0]
     if (!config) {
       await conn.rollback()
@@ -153,7 +179,7 @@ router.post('/', soloFacturador, async (req, res) => {
     }
     const nfc_numero = `${seq.tipo_ncf}${String(siguienteNcf).padStart(10, '0')}`
 
-    // 3. Número de factura correlativo
+    // 3. Número de factura correlativo (por empresa)
     const siguienteFactura = (config.factura_ultimo_numero || 0) + 1
     const numero = `${config.factura_prefijo || 'F'}${String(siguienteFactura).padStart(6, '0')}`
 
@@ -167,10 +193,10 @@ router.post('/', soloFacturador, async (req, res) => {
     // 5. Insertar la factura
     const [facResult] = await conn.query(
       `INSERT INTO facturas
-        (numero, nfc_secuencia_id, nfc_numero, tipo_servicio_id, fecha, vencimiento,
+        (tenant_id, numero, nfc_secuencia_id, nfc_numero, tipo_servicio_id, fecha, vencimiento,
          cliente_id, empresa_id, servicio, subtotal, itbis, ret_itbis, ret_isr, total, estado, usuario_id)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'emitida', ?)`,
-      [numero, seq.id, nfc_numero, tipo_servicio_id || null, fecha, vencimiento || null,
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'emitida', ?)`,
+      [req.tenant_id, numero, seq.id, nfc_numero, tipo_servicio_id || null, fecha, vencimiento || null,
        cliente_id, empresa_id, servicio || null, subtotal, itbis, ret_itbis, ret_isr, total,
        req.usuario?.id || null]
     )
@@ -181,24 +207,24 @@ router.post('/', soloFacturador, async (req, res) => {
     for (const i of items) {
       await conn.query(
         `INSERT INTO factura_items
-          (factura_id, articulo_id, descripcion_custom, cantidad, ancho, alto,
+          (tenant_id, factura_id, articulo_id, descripcion_custom, cantidad, ancho, alto,
            unidad_medida_id, precio_unitario, tipo_precio, subtotal, orden)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [facturaId, i.articulo_id, i.descripcion_custom || null, i.cantidad,
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [req.tenant_id, facturaId, i.articulo_id, i.descripcion_custom || null, i.cantidad,
          i.ancho || null, i.alto || null, i.unidad_medida_id, i.precio_unitario,
          i.tipo_precio || 'unitario', subtotalItem(i), orden++]
       )
     }
 
     // 7. Avanzar contadores (NCF y número de factura)
-    await conn.query('UPDATE nfc_secuencias SET ultimo_usado = ? WHERE id = ?', [siguienteNcf, seq.id])
-    await conn.query('UPDATE configuracion SET factura_ultimo_numero = ? WHERE id = ?', [siguienteFactura, config.id])
+    await conn.query('UPDATE nfc_secuencias SET ultimo_usado = ? WHERE id = ? AND tenant_id = ?', [siguienteNcf, seq.id, req.tenant_id])
+    await conn.query('UPDATE configuracion SET factura_ultimo_numero = ? WHERE id = ? AND tenant_id = ?', [siguienteFactura, config.id, req.tenant_id])
 
     await conn.commit()
 
     // Con la misma conexión: pedir otra al pool mientras esta sigue tomada agota el pool
     // cuando hay tantas emisiones simultáneas como conexiones.
-    const [rows] = await conn.query('SELECT * FROM facturas WHERE id = ?', [facturaId])
+    const [rows] = await conn.query('SELECT * FROM facturas WHERE id = ? AND tenant_id = ?', [facturaId, req.tenant_id])
 
     // 8. Alerta si la secuencia NCF se está agotando
     const disponibles = seq.hasta - siguienteNcf
@@ -226,13 +252,13 @@ router.post('/', soloFacturador, async (req, res) => {
 // PUT /api/facturas/:id/anular — anula una factura (solo admin)
 router.put('/:id/anular', soloAdmin, async (req, res) => {
   try {
-    const [rows] = await pool.query('SELECT estado FROM facturas WHERE id = ?', [req.params.id])
+    const [rows] = await pool.query('SELECT estado FROM facturas WHERE id = ? AND tenant_id = ?', [req.params.id, req.tenant_id])
     if (!rows[0]) return res.status(404).json({ ok: false, mensaje: 'Factura no encontrada' })
     if (rows[0].estado === 'anulada') {
       return res.status(400).json({ ok: false, mensaje: 'La factura ya está anulada' })
     }
 
-    await pool.query("UPDATE facturas SET estado = 'anulada', updated_at = NOW() WHERE id = ?", [req.params.id])
+    await pool.query("UPDATE facturas SET estado = 'anulada', updated_at = NOW() WHERE id = ? AND tenant_id = ?", [req.params.id, req.tenant_id])
     res.json({ ok: true, mensaje: 'Factura anulada' })
   } catch (err) {
     console.error(err)
