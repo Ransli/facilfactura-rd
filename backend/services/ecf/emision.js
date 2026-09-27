@@ -116,7 +116,7 @@ async function guardarEcf(conn, { tenantId, facturaId, tipo, encf, documento, cr
         rnc_emisor, rnc_comprador, fecha_emision, monto_total, tasa_itbis, estado, proximo_intento)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'generado', ?)`,
     [tenantId, facturaId, tipo, encf, referenciaId, xml, codigo, ahora,
-     String(documento.emisor.rnc).replace(/\D/g, ''), rncComprador, documento.fechaEmision, total, documento.tasaItbis, ahora])
+     String(documento.emisor.rnc).replace(/\D/g, ''), rncComprador, documento.fechaEmision, total, documento.tasaItbis, new Date(ahora.getTime() - 1000)])
   return { id: r.insertId, tipo_ecf: tipo, encf, estado: 'generado', codigo_seguridad: codigo }
 }
 
