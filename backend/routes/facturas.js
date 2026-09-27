@@ -143,7 +143,7 @@ router.post('/', soloFacturador, async (req, res) => {
     const itbis     = round2(subtotal * (Number(config.itbis_porcentaje) / 100))
     const ret_itbis = round2(itbis * (Number(config.ret_itbis_porcentaje) / 100))
     const ret_isr   = round2(subtotal * (Number(config.ret_isr_porcentaje) / 100))
-    const total     = round2(subtotal - ret_isr)
+    const total     = round2(subtotal + itbis - ret_itbis - ret_isr)
 
     // 5. Insertar la factura
     const [facResult] = await conn.query(

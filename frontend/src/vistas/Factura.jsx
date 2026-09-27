@@ -94,7 +94,7 @@ export default function Factura() {
   const itbis       = subtotal * (pctItbis / 100)
   const retItbis    = itbis * (pctRetItbis / 100)
   const retIsr      = subtotal * (pctRetIsr / 100)
-  const total       = subtotal - retIsr
+  const total       = subtotal + itbis - retItbis - retIsr
   const moneda      = config?.moneda || 'DOP'
 
   const artsPorCategoria = useMemo(() => {
