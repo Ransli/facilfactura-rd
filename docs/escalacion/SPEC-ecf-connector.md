@@ -17,6 +17,12 @@ muestra el estado y el motivo de cualquier rechazo.
 
 ## Assumptions (decisiones tomadas)
 
+- **Los e-NCF reutilizan `nfc_secuencias`:** `E31` + 10 dígitos ya es el formato del e-NCF, y así se aprovechan la pantalla de NCF, el bloqueo
+  y la alerta de agotamiento. No hay tabla `secuencias_ecf`. La fecha de vencimiento de la secuencia es obligatoria en E31.
+- **Nota de crédito (34) de anulación total:** el código de modificación es 1 (anula el e-NCF referenciado) y repite los montos del
+  original; la corrección parcial queda como mejora.
+- **Sin descuentos ni recargos por ítem:** la v1 no los maneja, así que el XML no los emite.
+- **E32 sin retenciones:** el formato no las admite en consumo, por lo que una factura E32 se emite sin retención de ITBIS ni de ISR.
 - **Certificación y ambiente:** la certificación real ante la DGII es un trámite externo. El conector se construye contra el
   **ambiente configurable** (`TesteCF`, `CerteCF`, `eCF`) y contra un **simulador local de la DGII** con el que se prueba y
   se desarrolla. Las URL de los servicios siguen el patrón publicado por la DGII y se pueden cambiar por variable de entorno
@@ -51,9 +57,9 @@ Procesar la cola:   la ejecuta el servidor cada 30 s (ECF_TRABAJADOR=1) o proces
 ## Project Structure
 
 ```
-database/migrations/…_create_ecf_tables.js         → secuencias_ecf, ecf_emitidos, ecf_configuracion
+database/migrations/…_create_ecf_tables.js         → ecf_emitidos, ecf_configuracion (los e-NCF usan `nfc_secuencias`)
 backend/services/ecf/xml.js                        → construcción del XML (31, 32 y 34) desde una factura
-backend/services/ecf/secuencias.js                 → asignación del e-NCF con bloqueo
+backend/services/ecf/secuencias.js                 → validación de las secuencias E31/E32/E34 (se guardan en `nfc_secuencias`)
 backend/services/ecf/emision.js                    → emitirEcf (dentro de la transacción de la factura), notaDeCredito
 backend/services/ecf/clienteDgii.js                → semilla, token, recepción, consulta de estado
 backend/services/ecf/simuladorDgii.js              → simulador de los servicios de la DGII

@@ -3,6 +3,7 @@ import pool from '../config/database.js'
 import { verificarToken, soloAdmin } from '../middleware/auth.js'
 import { agregarTenantId } from '../middleware/tenant.js'
 import { verificarSuscripcion } from '../middleware/suscripcion.js'
+import { validarSecuenciaElectronica } from '../services/ecf/secuencias.js'
 
 const router = Router()
 router.use(verificarToken, agregarTenantId, verificarSuscripcion)
@@ -98,6 +99,9 @@ router.post('/', soloAdmin, async (req, res) => {
     return res.status(400).json({ ok: false, mensaje: 'desde debe ser menor que hasta' })
   }
 
+  const motivoElectronico = validarSecuenciaElectronica({ tipo_ncf, desde, hasta, fecha_vencimiento })
+  if (motivoElectronico) return res.status(400).json({ ok: false, mensaje: motivoElectronico })
+
   const alerta_desde = Math.floor(Number(hasta) * 0.8)
 
   const conn = await pool.getConnection()
@@ -131,6 +135,9 @@ router.post('/', soloAdmin, async (req, res) => {
 // PUT /api/nfc/:id
 router.put('/:id', soloAdmin, async (req, res) => {
   const { tipo_ncf, descripcion, desde, hasta, alerta_desde, fecha_vencimiento, activo } = req.body
+
+  const motivoElectronico = validarSecuenciaElectronica({ tipo_ncf, desde, hasta, fecha_vencimiento })
+  if (motivoElectronico) return res.status(400).json({ ok: false, mensaje: motivoElectronico })
 
   try {
     const [existe] = await pool.query('SELECT id FROM nfc_secuencias WHERE id = ? AND tenant_id = ?', [req.params.id, req.tenant_id])
