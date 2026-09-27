@@ -153,3 +153,41 @@ export async function elegirPlan(tenantId, planId) {
     throw err
   }
 }
+
+/**
+ * Paso 3: crea el administrador de la empresa y le entrega una sesión normal (JWT de empresa), de modo que al
+ * terminar el alta ya está dentro del sistema. Solo funciona una vez: la empresa no debe tener usuarios.
+ * El rol siempre es administrador y la empresa siempre es la del token; el cuerpo no puede cambiarlos.
+ */
+export async function crearAdministrador(tenantId, { nombre, email, password } = {}) {
+  if (!String(nombre ?? '').trim()) throw new ErrorDeRegistro('El nombre del administrador es requerido')
+  if (!String(email ?? '').trim()) throw new ErrorDeRegistro('El correo del administrador es requerido')
+  if (!esCorreoValido(email)) throw new ErrorDeRegistro('El correo no tiene un formato válido')
+  if (!password) throw new ErrorDeRegistro('La contraseña es requerida')
+  if (String(password).length < CLAVE_MINIMA_ADMIN) {
+    throw new ErrorDeRegistro(`La contraseña debe tener al menos ${CLAVE_MINIMA_ADMIN} caracteres`)
+  }
+
+  const correo = String(email).trim().toLowerCase()
+  const hash = await bcrypt.hash(String(password), 10)
+
+  try {
+    return await enTransaccion(pool, async (conn) => {
+      await empresaEnAlta(conn, tenantId)
+
+      const [enUso] = await conn.query('SELECT id FROM usuarios WHERE email = ?', [correo])
+      if (enUso[0]) throw new ErrorDeRegistro('Ese correo ya está en uso por otro usuario. Usa uno distinto.')
+
+      const [r] = await conn.query(
+        'INSERT INTO usuarios (tenant_id, nombre, email, password_hash, rol_id) VALUES (?, ?, ?, ?, 1)',
+        [tenantId, String(nombre).trim(), correo, hash])
+
+      const usuario = { id: r.insertId, tenant_id: tenantId, nombre: String(nombre).trim(), email: correo, rol: 'admin' }
+      const token = jwt.sign(usuario, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN || '8h' })
+      return { token, usuario }
+    })
+  } catch (err) {
+    if (err.code === 'ER_DUP_ENTRY') throw new ErrorDeRegistro('Ese correo ya está en uso por otro usuario. Usa uno distinto.')
+    throw err
+  }
+}

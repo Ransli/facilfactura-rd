@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { crearEmpresa, elegirPlan, tenantDelTokenRegistro, ErrorDeRegistro } from '../services/tenants/registro.js'
+import { crearEmpresa, elegirPlan, crearAdministrador, tenantDelTokenRegistro, ErrorDeRegistro } from '../services/tenants/registro.js'
 
 // Alta de empresas. Son rutas PÚBLICAS (no hay sesión todavía): la seguridad está en el token de registro que entrega
 // el paso 1 y que exigen los pasos siguientes. Ver services/tenants/registro.js.
@@ -28,6 +28,14 @@ router.post('/plan', manejar(async (req, res) => {
   const tenantId = tenantDelTokenRegistro(req.headers.authorization)
   const resultado = await elegirPlan(tenantId, req.body?.plan_id)
   res.json({ ok: true, ...resultado })
+}))
+
+// POST /api/registro/administrador — paso 3: crea al administrador y devuelve su sesión. Un solo uso por empresa.
+router.post('/administrador', manejar(async (req, res) => {
+  const tenantId = tenantDelTokenRegistro(req.headers.authorization)
+  const { nombre, email, password } = req.body ?? {}    // solo estos campos: ni el rol ni la empresa vienen del cuerpo
+  const resultado = await crearAdministrador(tenantId, { nombre, email, password })
+  res.status(201).json({ ok: true, ...resultado })
 }))
 
 export default router
