@@ -32,7 +32,7 @@ async function sembrarSecuencias(conn, tenantId) {
 export async function reiniciarDatos() {
   await pool.query('SET FOREIGN_KEY_CHECKS = 0')
   for (const t of ['factura_items', 'facturas', 'articulo_precios', 'articulos', 'categorias', 'clientes',
-                   'metodos_pago', 'nfc_secuencias', 'usuarios', 'empresas']) {
+                   'metodos_pago', 'nfc_secuencias', 'usuarios', 'empresas', 'certificados_digitales']) {
     await pool.query(`TRUNCATE TABLE \`${t}\``)
   }
   // Empresas creadas por otras pruebas: fuera, con sus catálogos y su configuración

@@ -52,7 +52,7 @@ Siguientes módulos: `subscription` → `onboarding` → `ecf-signing` → `ecf-
 # Módulos `ecf-signing` y `ecf-connector`
 
 - [x] E1. Cifrado, lectura de certificados y firma XMLDSig (unitarias)
-- [ ] E2. Certificado digital por empresa (tabla y API)
+- [x] E2. Certificado digital por empresa (tabla y API)
 - [ ] E3. Secuencias e-NCF por empresa
 - [ ] E4. Constructor del XML de los e-CF 31, 32 y 34
 - [ ] E5. Emisión de facturas `E31/E32` con e-NCF y XML firmado

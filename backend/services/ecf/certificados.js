@@ -3,6 +3,7 @@
 
 import crypto from 'node:crypto'
 import forge from 'node-forge'
+import { cifrar, descifrar, descifrarTexto } from './cifrado.js'
 
 const BITS_MINIMOS = 2048
 const DIAS_AVISO_VENCIMIENTO = 30
@@ -85,4 +86,50 @@ export function estadoDeVigencia(validoHasta, ahora = new Date()) {
   const dias = Math.floor((new Date(validoHasta).getTime() - ahora.getTime()) / MS_DIA)
   if (dias < 0) return { estado: 'vencido', dias_para_vencer: dias }
   return { estado: dias <= DIAS_AVISO_VENCIMIENTO ? 'por_vencer' : 'vigente', dias_para_vencer: dias }
+}
+
+// ── Almacenamiento por empresa ────────────────────────────────────────────────
+// Estas funciones reciben `db`: el pool o una conexión (ambos tienen .query).
+
+/** Metadatos públicos del certificado de la empresa, o { configurado: false }. Nunca incluye secretos. */
+export async function obtenerMetadatos(db, tenantId) {
+  const [[fila]] = await db.query(
+    `SELECT titular, emisor, serie, valido_desde, valido_hasta FROM certificados_digitales WHERE tenant_id = ?`, [tenantId])
+  if (!fila) return { configurado: false }
+  return { configurado: true, titular: fila.titular, emisor: fila.emisor, serie: fila.serie,
+    valido_desde: fila.valido_desde, valido_hasta: fila.valido_hasta, ...estadoDeVigencia(fila.valido_hasta) }
+}
+
+/** Valida el .p12, lo cifra y lo guarda como el certificado de la empresa (reemplaza al anterior). */
+export async function guardarCertificado(db, tenantId, { p12Base64, password, usuarioId = null }) {
+  const c = leerP12(p12Base64, password)         // lanza ErrorDeCertificado si no sirve
+  const p12Cifrado = cifrar(Buffer.from(p12Base64.replace(/\s+/g, ''), 'base64'))
+  const passwordCifrada = cifrar(String(password))
+  await db.query(
+    `INSERT INTO certificados_digitales
+       (tenant_id, p12_cifrado, password_cifrada, titular, emisor, serie, huella, valido_desde, valido_hasta, subido_por)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+     ON DUPLICATE KEY UPDATE p12_cifrado = VALUES(p12_cifrado), password_cifrada = VALUES(password_cifrada),
+       titular = VALUES(titular), emisor = VALUES(emisor), serie = VALUES(serie), huella = VALUES(huella),
+       valido_desde = VALUES(valido_desde), valido_hasta = VALUES(valido_hasta), subido_por = VALUES(subido_por)`,
+    [tenantId, p12Cifrado, passwordCifrada, c.titular, c.emisor, c.serie, c.huella, c.valido_desde, c.valido_hasta, usuarioId])
+  return obtenerMetadatos(db, tenantId)
+}
+
+/** Elimina el certificado de la empresa. Devuelve false si no tenía. */
+export async function eliminarCertificado(db, tenantId) {
+  const [r] = await db.query('DELETE FROM certificados_digitales WHERE tenant_id = ?', [tenantId])
+  return r.affectedRows > 0
+}
+
+/**
+ * La llave y el certificado en PEM, listos para firmar. Solo para uso interno de los servicios: ninguna ruta lo expone.
+ * @returns { clavePem, certificadoPem } o null si la empresa no tiene certificado
+ * @throws  ErrorDeCertificado si el guardado ya no está vigente
+ */
+export async function obtenerCredenciales(db, tenantId) {
+  const [[fila]] = await db.query('SELECT p12_cifrado, password_cifrada FROM certificados_digitales WHERE tenant_id = ?', [tenantId])
+  if (!fila) return null
+  const c = leerP12(descifrar(fila.p12_cifrado).toString('base64'), descifrarTexto(fila.password_cifrada))
+  return { clavePem: c.clavePem, certificadoPem: c.certificadoPem }
 }

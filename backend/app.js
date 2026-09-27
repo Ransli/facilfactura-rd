@@ -19,6 +19,7 @@ import usuariosRoutes from './routes/usuarios.js'
 import dashboardRoutes from './routes/dashboard.js'
 import suscripcionRoutes from './routes/suscripcion.js'
 import registroRoutes from './routes/registro.js'
+import ecfCertificadoRoutes from './routes/ecf-certificado.js'
 
 dotenv.config()
 
@@ -54,6 +55,7 @@ app.use('/api/usuarios', usuariosRoutes)
 app.use('/api/dashboard', dashboardRoutes)
 app.use('/api/suscripcion', suscripcionRoutes)
 app.use('/api/registro', registroRoutes)
+app.use('/api/ecf/certificado', ecfCertificadoRoutes)
 
 // ── Health check ──────────────────────────────────────────────
 app.get('/api/health', (_req, res) => {
