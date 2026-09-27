@@ -16,7 +16,7 @@ Un commit por tarea, en inglés, a nombre de Ransli, sin `Co-Authored-By`.
 
 ## Fase 3: portar las pruebas de la Unidad IV
 - [x] T5. Autenticación, roles y seguridad
-- [ ] T6. Clientes, catálogo, configuración y usuarios
+- [x] T6. Clientes, catálogo, configuración y usuarios
 - [ ] T7. Facturación, NCF e historial
 
 ### Checkpoint B (T5-T7)
