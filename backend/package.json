@@ -5,7 +5,13 @@
   "scripts": {
     "dev": "node --watch index.js",
     "start": "node index.js",
-    "seed": "node seed-usuarios.js"
+    "seed": "node seed-usuarios.js",
+    "db:create": "node scripts/create-db.js",
+    "db:migrate": "knex migrate:latest --knexfile knexfile.js",
+    "db:rollback": "knex migrate:rollback --knexfile knexfile.js",
+    "db:status": "knex migrate:status --knexfile knexfile.js",
+    "db:seed": "knex seed:run --knexfile knexfile.js",
+    "db:copy-v1": "node scripts/copy-from-v1.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -14,6 +20,7 @@
     "express": "^4.19.2",
     "inquirer": "^9.3.6",
     "jsonwebtoken": "^9.0.2",
+    "knex": "^3.3.0",
     "multer": "^2.1.1",
     "mysql2": "^3.10.1"
   }
