@@ -8,7 +8,7 @@ Un commit por tarea, en inglés, a nombre de Ransli, sin `Co-Authored-By`.
 - [x] T2. Copia de datos de la v1 y prueba de que la v1 no cambió
 
 ## Fase 2: arnés de pruebas
-- [ ] T3. Extraer `app.js` de `index.js`
+- [x] T3. Extraer `app.js` de `index.js`
 - [ ] T4. Arnés de pruebas y `npm test` con `facilfactura_test`
 
 ### Checkpoint A (T1-T4)
