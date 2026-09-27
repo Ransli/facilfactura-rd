@@ -17,10 +17,10 @@ Un commit por tarea, en inglés, a nombre de Ransli, sin `Co-Authored-By`.
 ## Fase 3: portar las pruebas de la Unidad IV
 - [x] T5. Autenticación, roles y seguridad
 - [x] T6. Clientes, catálogo, configuración y usuarios
-- [ ] T7. Facturación, NCF e historial
+- [x] T7. Facturación, NCF e historial
 
 ### Checkpoint B (T5-T7)
-- [ ] ~53 casos en verde, suite en menos de 60 s
+- [x] 56 casos en verde, suite en menos de 60 s
 
 ## Fase 4: defectos con TDD
 - [ ] T8. D-1 numeración concurrente
