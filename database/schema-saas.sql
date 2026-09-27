@@ -1,8 +1,8 @@
 -- ============================================================
 -- FácilFactura RD — esquema de la plataforma SaaS (base facilfactura_saas)
 -- ARCHIVO GENERADO con "npm run db:dump-schema": no editar a mano.
--- Fuente de verdad: database/migrations/ (1 migraciones aplicadas al generar este archivo).
--- Contiene 14 tablas y los datos de referencia; no contiene datos de ninguna empresa.
+-- Fuente de verdad: database/migrations/ (4 migraciones aplicadas al generar este archivo).
+-- Contiene 16 tablas y los datos de referencia; no contiene datos de ninguna empresa.
 -- ============================================================
 
 SET NAMES utf8mb4;
@@ -22,11 +22,14 @@ CREATE TABLE `articulo_precios` (
   `es_precio_default` tinyint(1) DEFAULT 0,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `tenant_id` int(10) unsigned NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_articulo_unidad` (`articulo_id`,`unidad_medida_id`),
   KEY `unidad_medida_id` (`unidad_medida_id`),
+  KEY `fk_articulo_precios_tenant` (`tenant_id`),
   CONSTRAINT `articulo_precios_ibfk_1` FOREIGN KEY (`articulo_id`) REFERENCES `articulos` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `articulo_precios_ibfk_2` FOREIGN KEY (`unidad_medida_id`) REFERENCES `unidades_medida` (`id`)
+  CONSTRAINT `articulo_precios_ibfk_2` FOREIGN KEY (`unidad_medida_id`) REFERENCES `unidades_medida` (`id`),
+  CONSTRAINT `fk_articulo_precios_tenant` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Tabla articulos
@@ -42,13 +45,15 @@ CREATE TABLE `articulos` (
   `activo` tinyint(1) DEFAULT 1,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `tenant_id` int(10) unsigned NOT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `codigo` (`codigo`),
+  UNIQUE KEY `uk_articulos_tenant_codigo` (`tenant_id`,`codigo`),
   KEY `unidad_medida_id` (`unidad_medida_id`),
   KEY `idx_articulos_categoria` (`categoria_id`),
   KEY `idx_articulos_tipo` (`tipo`),
   CONSTRAINT `articulos_ibfk_1` FOREIGN KEY (`categoria_id`) REFERENCES `categorias` (`id`),
-  CONSTRAINT `articulos_ibfk_2` FOREIGN KEY (`unidad_medida_id`) REFERENCES `unidades_medida` (`id`)
+  CONSTRAINT `articulos_ibfk_2` FOREIGN KEY (`unidad_medida_id`) REFERENCES `unidades_medida` (`id`),
+  CONSTRAINT `fk_articulos_tenant` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Tabla categorias
@@ -61,7 +66,10 @@ CREATE TABLE `categorias` (
   `activo` tinyint(1) DEFAULT 1,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  PRIMARY KEY (`id`)
+  `tenant_id` int(10) unsigned NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `fk_categorias_tenant` (`tenant_id`),
+  CONSTRAINT `fk_categorias_tenant` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Tabla clientes
@@ -78,7 +86,10 @@ CREATE TABLE `clientes` (
   `activo` tinyint(1) DEFAULT 1,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  PRIMARY KEY (`id`)
+  `tenant_id` int(10) unsigned NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `fk_clientes_tenant` (`tenant_id`),
+  CONSTRAINT `fk_clientes_tenant` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Tabla configuracion
@@ -93,9 +104,12 @@ CREATE TABLE `configuracion` (
   `ret_isr_porcentaje` decimal(5,2) DEFAULT 10.00,
   `nfc_alerta_porcentaje` tinyint(3) unsigned DEFAULT 80,
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `tenant_id` int(10) unsigned NOT NULL,
   PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_configuracion_tenant` (`tenant_id`),
   KEY `empresa_id` (`empresa_id`),
-  CONSTRAINT `configuracion_ibfk_1` FOREIGN KEY (`empresa_id`) REFERENCES `empresas` (`id`)
+  CONSTRAINT `configuracion_ibfk_1` FOREIGN KEY (`empresa_id`) REFERENCES `empresas` (`id`),
+  CONSTRAINT `fk_configuracion_tenant` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Tabla empresas
@@ -114,8 +128,10 @@ CREATE TABLE `empresas` (
   `activo` tinyint(1) DEFAULT 1,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `tenant_id` int(10) unsigned NOT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `rnc` (`rnc`)
+  UNIQUE KEY `uk_empresas_tenant_rnc` (`tenant_id`,`rnc`),
+  CONSTRAINT `fk_empresas_tenant` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Tabla factura_items
@@ -132,13 +148,16 @@ CREATE TABLE `factura_items` (
   `tipo_precio` enum('unitario','detalle','mayoreo') DEFAULT 'unitario',
   `subtotal` decimal(12,2) NOT NULL,
   `orden` tinyint(3) unsigned DEFAULT 1,
+  `tenant_id` int(10) unsigned NOT NULL,
   PRIMARY KEY (`id`),
   KEY `articulo_id` (`articulo_id`),
   KEY `unidad_medida_id` (`unidad_medida_id`),
   KEY `idx_factura_items_factura` (`factura_id`),
+  KEY `fk_factura_items_tenant` (`tenant_id`),
   CONSTRAINT `factura_items_ibfk_1` FOREIGN KEY (`factura_id`) REFERENCES `facturas` (`id`) ON DELETE CASCADE,
   CONSTRAINT `factura_items_ibfk_2` FOREIGN KEY (`articulo_id`) REFERENCES `articulos` (`id`),
-  CONSTRAINT `factura_items_ibfk_3` FOREIGN KEY (`unidad_medida_id`) REFERENCES `unidades_medida` (`id`)
+  CONSTRAINT `factura_items_ibfk_3` FOREIGN KEY (`unidad_medida_id`) REFERENCES `unidades_medida` (`id`),
+  CONSTRAINT `fk_factura_items_tenant` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Tabla facturas
@@ -162,8 +181,9 @@ CREATE TABLE `facturas` (
   `usuario_id` int(10) unsigned DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `tenant_id` int(10) unsigned NOT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `numero` (`numero`),
+  UNIQUE KEY `uk_facturas_tenant_numero` (`tenant_id`,`numero`),
   KEY `nfc_secuencia_id` (`nfc_secuencia_id`),
   KEY `tipo_servicio_id` (`tipo_servicio_id`),
   KEY `empresa_id` (`empresa_id`),
@@ -176,7 +196,8 @@ CREATE TABLE `facturas` (
   CONSTRAINT `facturas_ibfk_2` FOREIGN KEY (`tipo_servicio_id`) REFERENCES `tipos_servicio` (`id`),
   CONSTRAINT `facturas_ibfk_3` FOREIGN KEY (`cliente_id`) REFERENCES `clientes` (`id`),
   CONSTRAINT `facturas_ibfk_4` FOREIGN KEY (`empresa_id`) REFERENCES `empresas` (`id`),
-  CONSTRAINT `facturas_ibfk_5` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`)
+  CONSTRAINT `facturas_ibfk_5` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`),
+  CONSTRAINT `fk_facturas_tenant` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Tabla metodos_pago
@@ -192,8 +213,11 @@ CREATE TABLE `metodos_pago` (
   `orden` tinyint(3) unsigned DEFAULT 1,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `tenant_id` int(10) unsigned NOT NULL,
   PRIMARY KEY (`id`),
   KEY `empresa_id` (`empresa_id`),
+  KEY `fk_metodos_pago_tenant` (`tenant_id`),
+  CONSTRAINT `fk_metodos_pago_tenant` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`),
   CONSTRAINT `metodos_pago_ibfk_1` FOREIGN KEY (`empresa_id`) REFERENCES `empresas` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -210,8 +234,32 @@ CREATE TABLE `nfc_secuencias` (
   `activo` tinyint(1) DEFAULT 1,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  PRIMARY KEY (`id`)
+  `tenant_id` int(10) unsigned NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `fk_nfc_secuencias_tenant` (`tenant_id`),
+  CONSTRAINT `fk_nfc_secuencias_tenant` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Tabla planes
+CREATE TABLE `planes` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `nombre` varchar(100) NOT NULL,
+  `slug` varchar(50) NOT NULL,
+  `descripcion` varchar(255) DEFAULT NULL,
+  `precio_mensual` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `moneda` varchar(10) NOT NULL DEFAULT 'DOP',
+  `max_usuarios` int(11) NOT NULL,
+  `max_clientes` int(11) NOT NULL,
+  `max_ecf_mes` int(11) NOT NULL,
+  `es_plan_prueba` tinyint(1) NOT NULL DEFAULT 0,
+  `dias_prueba` int(11) DEFAULT NULL,
+  `activo` tinyint(1) NOT NULL DEFAULT 1,
+  `orden` int(11) NOT NULL DEFAULT 1,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `planes_slug_unique` (`slug`)
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Tabla roles
 CREATE TABLE `roles` (
@@ -223,6 +271,30 @@ CREATE TABLE `roles` (
   UNIQUE KEY `nombre` (`nombre`)
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Tabla tenants
+CREATE TABLE `tenants` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `nombre` varchar(200) NOT NULL,
+  `slug` varchar(100) NOT NULL,
+  `rnc` varchar(20) NOT NULL,
+  `email` varchar(150) DEFAULT NULL,
+  `telefono` varchar(20) DEFAULT NULL,
+  `direccion` text DEFAULT NULL,
+  `logo_path` varchar(500) DEFAULT NULL,
+  `plan_id` int(10) unsigned NOT NULL,
+  `estado` enum('activo','prueba','suspendido','cancelado','pendiente_pago','pendiente','exento') NOT NULL DEFAULT 'pendiente',
+  `fecha_fin_prueba` date DEFAULT NULL,
+  `ip_registro` varchar(45) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `tenants_slug_unique` (`slug`),
+  UNIQUE KEY `tenants_rnc_unique` (`rnc`),
+  KEY `tenants_plan_id_foreign` (`plan_id`),
+  KEY `idx_tenants_estado` (`estado`),
+  CONSTRAINT `tenants_plan_id_foreign` FOREIGN KEY (`plan_id`) REFERENCES `planes` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 -- Tabla tipos_servicio
 CREATE TABLE `tipos_servicio` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
@@ -231,7 +303,10 @@ CREATE TABLE `tipos_servicio` (
   `activo` tinyint(1) DEFAULT 1,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  PRIMARY KEY (`id`)
+  `tenant_id` int(10) unsigned NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `fk_tipos_servicio_tenant` (`tenant_id`),
+  CONSTRAINT `fk_tipos_servicio_tenant` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Tabla unidades_medida
@@ -240,7 +315,10 @@ CREATE TABLE `unidades_medida` (
   `nombre` varchar(50) NOT NULL,
   `abreviatura` varchar(10) NOT NULL,
   `activo` tinyint(1) DEFAULT 1,
-  PRIMARY KEY (`id`)
+  `tenant_id` int(10) unsigned NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `fk_unidades_medida_tenant` (`tenant_id`),
+  CONSTRAINT `fk_unidades_medida_tenant` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Tabla usuarios
@@ -254,46 +332,49 @@ CREATE TABLE `usuarios` (
   `ultimo_acceso` timestamp NULL DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `tenant_id` int(10) unsigned NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `email` (`email`),
   KEY `rol_id` (`rol_id`),
+  KEY `fk_usuarios_tenant` (`tenant_id`),
+  CONSTRAINT `fk_usuarios_tenant` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`),
   CONSTRAINT `usuarios_ibfk_1` FOREIGN KEY (`rol_id`) REFERENCES `roles` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Datos de referencia: roles
 INSERT INTO `roles` (`id`, `nombre`, `descripcion`, `created_at`) VALUES
-  (1, 'admin', 'Acceso total al sistema', '2026-09-26 22:45:57.000'),
-  (2, 'facturador', 'Puede crear y emitir facturas', '2026-09-26 22:45:57.000'),
-  (3, 'visor', 'Solo puede consultar información', '2026-09-26 22:45:57.000');
+  (1, 'admin', 'Acceso total al sistema', '2026-09-27 01:35:22.000'),
+  (2, 'facturador', 'Puede crear y emitir facturas', '2026-09-27 01:35:22.000'),
+  (3, 'visor', 'Solo puede consultar información', '2026-09-27 01:35:22.000');
 
 -- Datos de referencia: tipos_servicio
-INSERT INTO `tipos_servicio` (`id`, `nombre`, `descripcion`, `activo`, `created_at`, `updated_at`) VALUES
-  (1, 'Instalación de rótulos y señalización', 'Servicio de instalación de materiales publicitarios y señalización', 1, '2026-09-26 22:45:58.000', '2026-09-26 22:45:58.000'),
-  (2, 'Impresión de materiales publicitarios', 'Impresión de banners, lonas, vinilos y materiales gráficos', 1, '2026-09-26 22:45:58.000', '2026-09-26 22:45:58.000'),
-  (3, 'Diseño gráfico', 'Creación y diseño de artes, logos y materiales gráficos', 1, '2026-09-26 22:45:58.000', '2026-09-26 22:45:58.000'),
-  (4, 'Alquiler de equipos', 'Renta de grúas, plataformas y equipos especiales para instalación', 1, '2026-09-26 22:45:58.000', '2026-09-26 22:45:58.000'),
-  (5, 'Venta de materiales', 'Venta al detalle de materiales: lonas, yaldas, vinilos y similares', 1, '2026-09-26 22:45:58.000', '2026-09-26 22:45:58.000'),
-  (6, 'Mano de obra', 'Servicios de instalación, montaje y trabajo manual', 1, '2026-09-26 22:45:58.000', '2026-09-26 22:45:58.000'),
-  (7, 'Servicio general', 'Servicio de naturaleza general', 1, '2026-09-26 22:45:58.000', '2026-09-26 22:45:58.000');
+INSERT INTO `tipos_servicio` (`id`, `nombre`, `descripcion`, `activo`, `created_at`, `updated_at`, `tenant_id`) VALUES
+  (1, 'Instalación de rótulos y señalización', 'Servicio de instalación de materiales publicitarios y señalización', 1, '2026-09-27 01:35:22.000', '2026-09-27 01:35:22.000', 1),
+  (2, 'Impresión de materiales publicitarios', 'Impresión de banners, lonas, vinilos y materiales gráficos', 1, '2026-09-27 01:35:22.000', '2026-09-27 01:35:22.000', 1),
+  (3, 'Diseño gráfico', 'Creación y diseño de artes, logos y materiales gráficos', 1, '2026-09-27 01:35:22.000', '2026-09-27 01:35:22.000', 1),
+  (4, 'Alquiler de equipos', 'Renta de grúas, plataformas y equipos especiales para instalación', 1, '2026-09-27 01:35:22.000', '2026-09-27 01:35:22.000', 1),
+  (5, 'Venta de materiales', 'Venta al detalle de materiales: lonas, yaldas, vinilos y similares', 1, '2026-09-27 01:35:22.000', '2026-09-27 01:35:22.000', 1),
+  (6, 'Mano de obra', 'Servicios de instalación, montaje y trabajo manual', 1, '2026-09-27 01:35:22.000', '2026-09-27 01:35:22.000', 1),
+  (7, 'Servicio general', 'Servicio de naturaleza general', 1, '2026-09-27 01:35:22.000', '2026-09-27 01:35:22.000', 1);
 
 -- Datos de referencia: unidades_medida
-INSERT INTO `unidades_medida` (`id`, `nombre`, `abreviatura`, `activo`) VALUES
-  (1, 'Unidad', 'und', 1),
-  (2, 'Metro', 'm', 1),
-  (3, 'Metro cuadrado', 'm²', 1),
-  (4, 'Centímetro', 'cm', 1),
-  (5, 'Pie', 'pie', 1),
-  (6, 'Pieza', 'pz', 1),
-  (7, 'Rollo', 'rollo', 1),
-  (8, 'Hora', 'hr', 1),
-  (9, 'Día', 'día', 1),
-  (10, 'Servicio', 'svc', 1),
-  (11, 'Kilogramo', 'kg', 1),
-  (12, 'Litro', 'lt', 1),
-  (13, 'Global', 'global', 1);
+INSERT INTO `unidades_medida` (`id`, `nombre`, `abreviatura`, `activo`, `tenant_id`) VALUES
+  (1, 'Unidad', 'und', 1, 1),
+  (2, 'Metro', 'm', 1, 1),
+  (3, 'Metro cuadrado', 'm²', 1, 1),
+  (4, 'Centímetro', 'cm', 1, 1),
+  (5, 'Pie', 'pie', 1, 1),
+  (6, 'Pieza', 'pz', 1, 1),
+  (7, 'Rollo', 'rollo', 1, 1),
+  (8, 'Hora', 'hr', 1, 1),
+  (9, 'Día', 'día', 1, 1),
+  (10, 'Servicio', 'svc', 1, 1),
+  (11, 'Kilogramo', 'kg', 1, 1),
+  (12, 'Litro', 'lt', 1, 1),
+  (13, 'Global', 'global', 1, 1);
 
 -- Datos de referencia: configuracion
-INSERT INTO `configuracion` (`id`, `empresa_id`, `factura_ultimo_numero`, `factura_prefijo`, `moneda`, `itbis_porcentaje`, `ret_itbis_porcentaje`, `ret_isr_porcentaje`, `nfc_alerta_porcentaje`, `updated_at`) VALUES
-  (1, NULL, 0, 'F', 'DOP', '18.00', '100.00', '10.00', 80, '2026-09-26 22:45:58.000');
+INSERT INTO `configuracion` (`id`, `empresa_id`, `factura_ultimo_numero`, `factura_prefijo`, `moneda`, `itbis_porcentaje`, `ret_itbis_porcentaje`, `ret_isr_porcentaje`, `nfc_alerta_porcentaje`, `updated_at`, `tenant_id`) VALUES
+  (1, NULL, 0, 'F', 'DOP', '18.00', '100.00', '10.00', 80, '2026-09-27 01:35:23.000', 1);
 
 SET FOREIGN_KEY_CHECKS = 1;

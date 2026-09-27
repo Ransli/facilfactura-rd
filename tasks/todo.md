@@ -13,10 +13,10 @@ Plan: `tasks/plan.md`. Un commit por tarea, en inglés, a nombre de Ransli, sin 
 - [x] T5. Aislamiento de configuración, métodos de pago y secuencias NCF
 - [x] T6. Aislamiento de facturas (numeración por empresa) y panel
 - [x] T7. Aislamiento de usuarios
-- [ ] T8. Quitar los `DEFAULT 1`, regenerar `schema-saas.sql` y cerrar el módulo
+- [x] T8. Quitar los `DEFAULT 1`, regenerar `schema-saas.sql` y cerrar el módulo
 
 ### Checkpoint 2 (fin de `tenancy`)
-- [ ] Criterios 1 a 6 de `SPEC-tenancy.md` cumplidos; suite verde
+- [x] Criterios 1 a 6 de `SPEC-tenancy.md` cumplidos; suite verde
 
 ---
 Siguientes módulos: `subscription` → `onboarding` → `ecf-signing` → `ecf-connector` → `release`. Master aparte, fuera del repo.

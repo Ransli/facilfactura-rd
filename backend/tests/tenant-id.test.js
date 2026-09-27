@@ -38,6 +38,19 @@ test('las 13 tablas de negocio tienen tenant_id obligatorio con clave foránea a
   }
 })
 
+test('tenant_id no tiene valor por defecto: un INSERT sin empresa falla en la base de datos', async () => {
+  for (const tabla of TABLAS_DE_NEGOCIO) {
+    const [[col]] = await t.pool.query(
+      `SELECT COLUMN_DEFAULT valor FROM information_schema.COLUMNS
+       WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND COLUMN_NAME = 'tenant_id'`, [tabla])
+    assert.equal(col.valor, null, `${tabla}.tenant_id no debe tener DEFAULT`)
+  }
+  await assert.rejects(
+    t.pool.query("INSERT INTO clientes (nombre) VALUES ('Sin empresa')"),
+    /tenant_id|foreign key/i
+  )
+})
+
 test('roles sigue siendo un catálogo global, sin tenant_id', async () => {
   const [cols] = await t.pool.query(
     `SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'roles' AND COLUMN_NAME = 'tenant_id'`)
