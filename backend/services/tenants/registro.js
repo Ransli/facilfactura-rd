@@ -10,7 +10,7 @@ import pool from '../../config/database.js'
 import { enTransaccion } from '../../utils/transaccion.js'
 import { soloDigitos, esDocumentoValido, formatearDocumento, esCorreoValido } from '../../utils/documentos.js'
 import { aprovisionarEmpresa } from './aprovisionar.js'
-import { iniciarSuscripcion, ErrorDeSuscripcion } from '../suscripcion/gestion.js'
+import { iniciarSuscripcion, ErrorDeSuscripcion, DIAS_PARA_PAGAR } from '../suscripcion/gestion.js'
 
 const VIGENCIA_TOKEN_REGISTRO = '2h'
 const LIMITE_POR_OMISION = 3
@@ -117,6 +117,38 @@ export async function crearEmpresa(datos, { ip = null } = {}) {
     })
   } catch (err) {
     if (err.code === 'ER_DUP_ENTRY') throw new ErrorDeRegistro('Ya existe una empresa con esos datos (RNC o nombre)')
+    if (err instanceof ErrorDeSuscripcion) throw new ErrorDeRegistro(err.message, err.estado)
+    throw err
+  }
+}
+
+// Bloquea la fila de la empresa y comprueba que el alta siga abierta (sin usuarios): una empresa que ya tiene
+// administrador no se puede tocar con un token de registro.
+async function empresaEnAlta(conn, tenantId) {
+  const [[tenant]] = await conn.query('SELECT id, nombre FROM tenants WHERE id = ? FOR UPDATE', [tenantId])
+  if (!tenant) throw new ErrorDeRegistro('La empresa del registro no existe', 404)
+  const [[{ n }]] = await conn.query('SELECT COUNT(*) AS n FROM usuarios WHERE tenant_id = ?', [tenantId])
+  if (n > 0) throw new ErrorDeRegistro('Esta empresa ya completó su registro. Inicia sesión.', 409)
+  return tenant
+}
+
+/** Paso 2: elige (o cambia) el plan de la empresa que se está registrando. */
+export async function elegirPlan(tenantId, planId) {
+  if (!planId) throw new ErrorDeRegistro('Debes elegir un plan')
+  try {
+    return await enTransaccion(pool, async (conn) => {
+      await empresaEnAlta(conn, tenantId)
+      const inicio = await iniciarSuscripcion(conn, tenantId, planId, { actor: 'sistema' })
+      const [[plan]] = await conn.query(
+        'SELECT id, nombre, slug, precio_mensual, moneda FROM planes WHERE id = ?', [planId])
+      return {
+        estado: inicio.estado,
+        fecha_limite: inicio.fecha_limite,
+        dias_para_pagar: inicio.estado === 'pendiente_pago' ? DIAS_PARA_PAGAR : null,
+        plan: { ...plan, precio_mensual: Number(plan.precio_mensual) },
+      }
+    })
+  } catch (err) {
     if (err instanceof ErrorDeSuscripcion) throw new ErrorDeRegistro(err.message, err.estado)
     throw err
   }
