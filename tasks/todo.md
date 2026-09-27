@@ -1,46 +1,22 @@
-# Lista de tareas: módulo `platform-db`
+# Lista de tareas: módulo `tenancy`
 
-Plan y detalle: `tasks/plan.md`. Marcar cada tarea al terminar (criterios cumplidos + definición de terminado).
-Un commit por tarea, en inglés, a nombre de Ransli, sin `Co-Authored-By`.
+Plan: `tasks/plan.md`. Un commit por tarea, en inglés, a nombre de Ransli, sin `Co-Authored-By`. **Sin push hasta que Ransli lo indique.**
 
-## Fase 1: base de datos
-- [x] T1. Migraciones Knex y scripts `db:*` (commit + ciclo create/migrate/rollback)
-- [x] T2. Copia de datos de la v1 y prueba de que la v1 no cambió
+- [ ] T1. Tablas `planes` y `tenants` con planes iniciales y el tenant 1 (empresa migrada de la v1)
+- [ ] T2. `tenant_id` en las 13 tablas de negocio (default 1), datos al tenant 1, únicos por empresa
+- [ ] T3. `agregarTenantId`, JWT con `tenant_id`, helpers de dos empresas y aislamiento de clientes
 
-## Fase 2: arnés de pruebas
-- [x] T3. Extraer `app.js` de `index.js`
-- [x] T4. Arnés de pruebas y `npm test` con `facilfactura_test`
+### Checkpoint 1 (T1-T3)
+- [ ] Migraciones y rollback verificados, suite completa verde, clientes aislados entre empresas
 
-### Checkpoint A (T1-T4)
-- [x] Migraciones y copia verificadas, app corre sobre `facilfactura_saas`, `npm test` verde
+- [ ] T4. Aislamiento de categorías, unidades de medida, tipos de servicio y artículos
+- [ ] T5. Aislamiento de configuración, métodos de pago y secuencias NCF
+- [ ] T6. Aislamiento de facturas (numeración por empresa) y panel
+- [ ] T7. Aislamiento de usuarios
+- [ ] T8. Quitar los `DEFAULT 1`, regenerar `schema-saas.sql` y cerrar el módulo
 
-## Fase 3: portar las pruebas de la Unidad IV
-- [x] T5. Autenticación, roles y seguridad
-- [x] T6. Clientes, catálogo, configuración y usuarios
-- [x] T7. Facturación, NCF e historial
-
-### Checkpoint B (T5-T7)
-- [x] 56 casos en verde, suite en menos de 60 s
-
-## Fase 4: defectos con TDD
-- [x] T8. D-1 numeración concurrente
-- [x] T9. D-2 total con retención de ITBIS parcial (servidor y vista)
-- [x] T10. D-3 cantidades y precios inválidos
-- [x] T11. D-5 referencias inexistentes (facturas y usuarios)
-- [x] T12. D-4 permisos de clientes (servidor y vista)
-
-### Checkpoint C (T8-T12)
-- [x] 5 defectos cerrados, suite completa verde, app probada a mano sobre `facilfactura_saas`
-
-## Fase 5: esquema, CI y kit
-- [x] T13. `database/schema-saas.sql` generado con `db:dump-schema`
-- [x] T14. Kit de Carlos v0 en `docs/escalacion/carlos/`
-- [x] T15. GitHub Actions con MariaDB
-- [x] T16. Cierre: README, contexto, memoria y push a `master`
-
-### Checkpoint D (fin del módulo)
-- [x] Criterios 1 a 5 de la spec cumplidos, CI verde (run 36289779025), kit de Carlos publicado
+### Checkpoint 2 (fin de `tenancy`)
+- [ ] Criterios 1 a 6 de `SPEC-tenancy.md` cumplidos; suite verde
 
 ---
-Siguientes módulos (orden): `tenancy` → `subscription` → `onboarding` → `master-console` → `ecf-signing` → `ecf-connector` → `release`.
-Carlos en paralelo: `accounting` → `ecf-receiver` → `expense-scanner`.
+Siguientes módulos: `subscription` → `onboarding` → `ecf-signing` → `ecf-connector` → `release`. Master aparte, fuera del repo.
