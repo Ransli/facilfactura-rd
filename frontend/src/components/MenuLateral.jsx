@@ -6,6 +6,7 @@ const items = [
   { id: 'productos',     icono: 'fa-solid fa-box',                 label: 'Productos' },
   { id: 'clientes',      icono: 'fa-solid fa-users',               label: 'Clientes' },
   { id: 'nfc',           icono: 'fa-solid fa-barcode',             label: 'NCF' },
+  { id: 'ecf',           icono: 'fa-solid fa-file-shield',         label: 'e-CF' },
   { id: 'historial',     icono: 'fa-solid fa-clock-rotate-left',   label: 'Historial' },
   { id: 'configuracion', icono: 'fa-solid fa-cog',                 label: 'Configuración' },
   { id: 'usuarios',      icono: 'fa-solid fa-user-gear',           label: 'Usuarios', soloAdmin: true },

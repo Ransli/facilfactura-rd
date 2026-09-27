@@ -17,6 +17,13 @@ const whatsappUrl = (tel, cel) => {
   return `https://web.whatsapp.com/send?phone=${intl}`
 }
 
+const ETIQUETA_NCF = {
+  E31: 'E31 — Crédito Fiscal Electrónico', E32: 'E32 — Consumo Electrónico',
+  B01: 'B01 — Crédito Fiscal', B02: 'B02 — Consumidor Final',
+  B11: 'B11 — Proveedores Informales', B14: 'B14 — Regímenes Especiales',
+  B15: 'B15 — Gubernamental', B16: 'B16 — Exportaciones',
+}
+
 const horaCorta = (iso) =>
   new Date(iso).toLocaleTimeString('es-DO', { hour: '2-digit', minute: '2-digit' })
 
@@ -29,6 +36,8 @@ export default function Factura() {
   const [tiposServicio, setTiposServicio] = useState([])
   const [unidades, setUnidades]           = useState([])
   const [alertaNcf, setAlertaNcf]         = useState(null)
+  const [secuenciasNcf, setSecuenciasNcf] = useState([])
+  const [tipoNcf, setTipoNcf]             = useState('')
 
   // La factura en curso arranca desde el borrador local, si quedó uno.
   const borradorInicial = useMemo(() => leerBorrador(), [])
@@ -55,16 +64,18 @@ export default function Factura() {
   useEffect(() => {
     async function init() {
       try {
-        const [cfg, arts, tipos, unis] = await Promise.all([
+        const [cfg, arts, tipos, unis, secs] = await Promise.all([
           api.get('/configuracion'),
           api.get('/articulos'),
           api.get('/tipos-servicio'),
           api.get('/unidades-medida'),
+          api.get('/nfc/activas'),
         ])
         setConfig(cfg.data)
         setCatalogo(arts.data)
         setTiposServicio(tipos.data)
         setUnidades(unis.data)
+        setSecuenciasNcf(secs.data)
       } catch (err) {
         console.error('Error cargando datos de factura:', err)
       }
@@ -189,6 +200,7 @@ export default function Factura() {
       const res = await api.post('/facturas', {
         cliente_id: cliente.id, empresa_id: config.empresa_id,
         tipo_servicio_id: tipoServicioId || null,
+        tipo_ncf: tipoNcf || undefined,
         fecha: fechaHoy(), vencimiento: vencimiento || null,
         items: items.map(i => ({
           articulo_id: i.articulo_id, descripcion_custom: i.descripcion_custom,
@@ -197,7 +209,7 @@ export default function Factura() {
           tipo_precio: i.tipo_precio, subtotal: i.subtotal,
         })),
       })
-      setFacturaG(res.data)
+      setFacturaG({ ...res.data, ecf: res.ecf })
       limpiarBorrador()
       setGuardadoEn(null)
       if (res.alerta_ncf) setAlertaNcf(res.alerta_ncf_mensaje)
@@ -217,7 +229,7 @@ export default function Factura() {
     limpiarBorrador()
     setGuardadoEn(null)
     setItems([]); setCliente(null); setTipoSvcId('');
-    setVencimiento(''); setFacturaG(null); setAlertaNcf(null)
+    setVencimiento(''); setFacturaG(null); setAlertaNcf(null); setTipoNcf('')
   }
 
   // Dos clics en vez de un window.confirm: no bloquea el navegador y se
@@ -356,11 +368,32 @@ export default function Factura() {
             </div>
           </div>
           <div className="info-block">
-            <div className="info-label">NCF:</div>
-            <div className="info-value" style={{ fontFamily:'monospace', fontSize:'0.95rem' }}>
-              {facturaGuardada?.nfc_numero || '(se asigna al guardar)'}
+            <div className="info-label">Tipo de comprobante:</div>
+            <div className="info-value">
+              {facturaGuardada ? (
+                <strong style={{ fontFamily:'monospace' }}>{facturaGuardada.nfc_numero}</strong>
+              ) : secuenciasNcf.length > 1 ? (
+                <select value={tipoNcf} onChange={e => setTipoNcf(e.target.value)}
+                  style={{ border:'1px solid #d0d8e4', borderRadius:6, padding:'5px 8px', fontSize:'0.88rem', background:'#f8fafc', width:'100%' }}>
+                  {secuenciasNcf.map(s => <option key={s.tipo_ncf} value={s.tipo_ncf}>{ETIQUETA_NCF[s.tipo_ncf] || s.tipo_ncf}</option>)}
+                </select>
+              ) : (
+                <span style={{ fontFamily:'monospace', fontSize:'0.9rem' }}>(se asigna al guardar)</span>
+              )}
             </div>
           </div>
+          {facturaGuardada?.ecf && (
+            <div className="info-block">
+              <div className="info-label">e-CF:</div>
+              <div className="info-value">
+                <span className={`badge ${facturaGuardada.ecf.estado?.startsWith('acept') ? 'badge-verde' : facturaGuardada.ecf.estado === 'rechazado' ? 'badge-rojo' : 'badge-gris'}`}>
+                  {facturaGuardada.ecf.estado === 'generado' ? 'Pendiente de envío a la DGII'
+                    : facturaGuardada.ecf.estado === 'aceptado' ? 'Aceptado por la DGII'
+                    : facturaGuardada.ecf.estado || 'enviado'}
+                </span>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

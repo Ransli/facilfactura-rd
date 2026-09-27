@@ -6,6 +6,7 @@ import Factura from './vistas/Factura'
 import Productos from './vistas/Productos'
 import Clientes from './vistas/Clientes'
 import NFC from './vistas/NFC'
+import ECF from './vistas/ECF'
 import Historial from './vistas/Historial'
 import Configuracion from './vistas/Configuracion'
 import Usuarios from './vistas/Usuarios'
@@ -20,6 +21,7 @@ const VISTAS = {
   productos:     Productos,
   clientes:      Clientes,
   nfc:           NFC,
+  ecf:           ECF,
   historial:     Historial,
   configuracion: Configuracion,
   usuarios:      Usuarios,

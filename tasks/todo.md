@@ -60,7 +60,7 @@ Siguientes módulos: `subscription` → `onboarding` → `ecf-signing` → `ecf-
 - [x] E7. Cola de envío con reintentos
 - [x] E8. Representación impresa con QR y código de seguridad
 - [x] E9. Nota de crédito electrónica (34)
-- [ ] E10. Vista de e-CF en el frontend
+- [x] E10. Vista de e-CF en el frontend
 - [ ] E11. Esquema, documentación y cierre
 
 ### Checkpoint (fin de los módulos e-CF)
