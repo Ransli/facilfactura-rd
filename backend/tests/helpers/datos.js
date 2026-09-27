@@ -36,6 +36,9 @@ export async function reiniciarDatos() {
     await pool.query(`TRUNCATE TABLE \`${t}\``)
   }
   // Empresas creadas por otras pruebas: fuera, con sus catálogos y su configuración
+  for (const t of ['subscription_history', 'subscription_payments', 'tenant_subscriptions']) {
+    await pool.query(`DELETE FROM \`${t}\` WHERE tenant_id <> 1`)
+  }
   await pool.query('DELETE FROM unidades_medida WHERE tenant_id <> 1')
   await pool.query('DELETE FROM tipos_servicio WHERE tenant_id <> 1')
   await pool.query('DELETE FROM configuracion WHERE tenant_id <> 1')

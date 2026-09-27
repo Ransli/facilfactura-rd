@@ -25,7 +25,7 @@ Siguientes módulos: `subscription` → `onboarding` → `ecf-signing` → `ecf-
 
 # Módulo `subscription`
 
-- [ ] S1. Tablas de suscripción, pagos e historial; función pura `evaluarEstado` con pruebas unitarias
+- [x] S1. Tablas de suscripción, pagos e historial; función pura `evaluarEstado` con pruebas unitarias
 - [ ] S2. `verificarSuscripcion` en las rutas de negocio (bloqueo = solo lectura) y `GET /api/suscripcion/mi-suscripcion`
 - [ ] S3. Límites del plan (`verificarLimite`, `GET /api/suscripcion/limites`) aplicados a usuarios y clientes
 - [ ] S4. Servicios de gestión con historial y `GET /api/suscripcion/planes` público
