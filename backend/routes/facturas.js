@@ -93,15 +93,10 @@ router.post('/', soloFacturador, async (req, res) => {
   try {
     await conn.beginTransaction()
 
-    // 1. Configuración fiscal
-    const [cfgRows] = await conn.query('SELECT * FROM configuracion ORDER BY id LIMIT 1')
-    const config = cfgRows[0]
-    if (!config) {
-      await conn.rollback()
-      return res.status(400).json({ ok: false, mensaje: 'No hay configuración del sistema. Configúrala primero.' })
-    }
+    // Orden de bloqueo fijo (secuencia NCF y luego configuración) para toda emisión: así dos
+    // emisiones simultáneas se turnan en vez de leer el mismo correlativo o interbloquearse.
 
-    // 2. Secuencia NCF del tipo pedido (bloqueada para la transacción).
+    // 1. Secuencia NCF del tipo pedido (bloqueada para la transacción).
     // Sin tipo_ncf se toma la primera vigente, que es como se comportaba antes.
     const [seqRows] = await conn.query(
       `SELECT * FROM nfc_secuencias
@@ -119,6 +114,14 @@ router.post('/', soloFacturador, async (req, res) => {
           ? `No hay una secuencia NCF activa del tipo ${tipo_ncf}. Registra una en la sección NCF.`
           : 'No hay una secuencia NCF activa. Registra una en la sección NCF.',
       })
+    }
+
+    // 2. Configuración fiscal y correlativo de facturas, leídos con bloqueo tras la secuencia
+    const [cfgRows] = await conn.query('SELECT * FROM configuracion ORDER BY id LIMIT 1 FOR UPDATE')
+    const config = cfgRows[0]
+    if (!config) {
+      await conn.rollback()
+      return res.status(400).json({ ok: false, mensaje: 'No hay configuración del sistema. Configúrala primero.' })
     }
 
     const siguienteNcf = Math.max(seq.ultimo_usado + 1, seq.desde)
@@ -174,7 +177,9 @@ router.post('/', soloFacturador, async (req, res) => {
 
     await conn.commit()
 
-    const [rows] = await pool.query('SELECT * FROM facturas WHERE id = ?', [facturaId])
+    // Con la misma conexión: pedir otra al pool mientras esta sigue tomada agota el pool
+    // cuando hay tantas emisiones simultáneas como conexiones.
+    const [rows] = await conn.query('SELECT * FROM facturas WHERE id = ?', [facturaId])
 
     // 8. Alerta si la secuencia NCF se está agotando
     const disponibles = seq.hasta - siguienteNcf

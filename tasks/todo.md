@@ -23,7 +23,7 @@ Un commit por tarea, en inglés, a nombre de Ransli, sin `Co-Authored-By`.
 - [x] 56 casos en verde, suite en menos de 60 s
 
 ## Fase 4: defectos con TDD
-- [ ] T8. D-1 numeración concurrente
+- [x] T8. D-1 numeración concurrente
 - [ ] T9. D-2 total con retención de ITBIS parcial (servidor y vista)
 - [ ] T10. D-3 cantidades y precios inválidos
 - [ ] T11. D-5 referencias inexistentes (facturas y usuarios)
