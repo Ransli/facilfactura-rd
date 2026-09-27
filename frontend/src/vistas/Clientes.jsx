@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { api } from '../api/config'
+import { useAuth } from '../context/AuthContext'
 import Toast, { useToast } from '../components/Toast'
 import {
   formatearRncCedula, formatearTelefono,
@@ -11,6 +12,8 @@ import './vistas.css'
 const FORM_VACIO = { nombre: '', rnc: '', telefono: '', celular: '', email: '', direccion: '', ciudad: '', tipo: 'empresa' }
 
 export default function Clientes() {
+  const { usuario } = useAuth()
+  const puedeEditar = usuario?.rol === 'admin' || usuario?.rol === 'facturador'   // el visor solo consulta
   const [clientes, setClientes]   = useState([])
   const [buscar, setBuscar]       = useState('')
   const [cargando, setCargando]   = useState(true)
@@ -105,9 +108,11 @@ export default function Clientes() {
     <div className="vista-card">
       <div className="vista-header">
         <h2 className="vista-titulo"><i className="fas fa-users"></i> Clientes</h2>
-        <button className="btn-primary" onClick={abrirNuevo}>
-          <i className="fas fa-plus"></i> Nuevo cliente
-        </button>
+        {puedeEditar && (
+          <button className="btn-primary" onClick={abrirNuevo}>
+            <i className="fas fa-plus"></i> Nuevo cliente
+          </button>
+        )}
       </div>
 
       <div className="vista-toolbar">
@@ -167,12 +172,16 @@ export default function Clientes() {
                       </span>
                     )
                   }
-                  <button className="btn-icono editar" onClick={() => abrirEditar(c)} title="Editar">
-                    <i className="fas fa-pen"></i>
-                  </button>
-                  <button className="btn-icono eliminar" onClick={() => setModalElim(c)} title="Eliminar">
-                    <i className="fas fa-trash"></i>
-                  </button>
+                  {puedeEditar && (
+                    <>
+                      <button className="btn-icono editar" onClick={() => abrirEditar(c)} title="Editar">
+                        <i className="fas fa-pen"></i>
+                      </button>
+                      <button className="btn-icono eliminar" onClick={() => setModalElim(c)} title="Eliminar">
+                        <i className="fas fa-trash"></i>
+                      </button>
+                    </>
+                  )}
                 </td>
               </tr>
             ))}

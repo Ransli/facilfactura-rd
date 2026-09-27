@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import pool from '../config/database.js'
-import { verificarToken } from '../middleware/auth.js'
+import { verificarToken, soloFacturador } from '../middleware/auth.js'
 
 const router = Router()
 router.use(verificarToken)
@@ -39,7 +39,7 @@ router.get('/:id', async (req, res) => {
 })
 
 // POST /api/clientes
-router.post('/', async (req, res) => {
+router.post('/', soloFacturador, async (req, res) => {
   const { nombre, rnc, telefono, celular, email, direccion, ciudad, tipo } = req.body
   if (!nombre) return res.status(400).json({ ok: false, mensaje: 'El nombre es requerido' })
 
@@ -59,7 +59,7 @@ router.post('/', async (req, res) => {
 })
 
 // PUT /api/clientes/:id
-router.put('/:id', async (req, res) => {
+router.put('/:id', soloFacturador, async (req, res) => {
   const { nombre, rnc, telefono, celular, email, direccion, ciudad, tipo } = req.body
   if (!nombre) return res.status(400).json({ ok: false, mensaje: 'El nombre es requerido' })
 
@@ -79,7 +79,7 @@ router.put('/:id', async (req, res) => {
 })
 
 // DELETE /api/clientes/:id (soft delete)
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', soloFacturador, async (req, res) => {
   try {
     await pool.query('UPDATE clientes SET activo = 0 WHERE id = ?', [req.params.id])
     res.json({ ok: true, mensaje: 'Cliente eliminado' })

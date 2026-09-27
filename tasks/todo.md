@@ -27,10 +27,10 @@ Un commit por tarea, en inglés, a nombre de Ransli, sin `Co-Authored-By`.
 - [x] T9. D-2 total con retención de ITBIS parcial (servidor y vista)
 - [x] T10. D-3 cantidades y precios inválidos
 - [x] T11. D-5 referencias inexistentes (facturas y usuarios)
-- [ ] T12. D-4 permisos de clientes (servidor y vista)
+- [x] T12. D-4 permisos de clientes (servidor y vista)
 
 ### Checkpoint C (T8-T12)
-- [ ] 5 defectos cerrados, suite completa verde, app probada a mano sobre `facilfactura_saas`
+- [x] 5 defectos cerrados, suite completa verde, app probada a mano sobre `facilfactura_saas`
 
 ## Fase 5: esquema, CI y kit
 - [ ] T13. `database/schema-saas.sql` generado con `db:dump-schema`
