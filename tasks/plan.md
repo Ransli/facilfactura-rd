@@ -102,3 +102,31 @@ verde, una prueba de aislamiento que falló antes del cambio, y commit atómico 
 | O3 | Paso 3: crear el administrador y devolver la sesión (un solo uso, concurrencia) | `routes/registro.js` |
 | O4 | Asistente de registro en el frontend | `vistas/Registro.jsx`, `Login.jsx`, `App.jsx` |
 | O5 | Esquema, documentación y cierre | `schema-saas.sql` |
+
+
+---
+
+# Módulos `ecf-signing` y `ecf-connector` (specs: `docs/escalacion/SPEC-ecf-signing.md`, `SPEC-ecf-connector.md`)
+
+## Decisiones
+
+- **El formato sale del documento oficial de la DGII** (etiquetas, orden y obligatoriedad por tipo), no de memoria.
+- **Simulador de la DGII** como parte del repo: permite desarrollar y probar sin certificado ni red; el mismo cliente apunta a TesteCF cambiando la URL.
+- **Emisión atómica, envío asíncrono:** la factura, el e-NCF y el XML firmado se guardan juntos; el envío es una cola con reintentos.
+- **Certificado cifrado en la base de datos** (AES-256-GCM), nunca devuelto por la API.
+
+## Tareas
+
+| Tarea | Alcance | Archivos principales |
+|---|---|---|
+| E1 | Cifrado y lectura de certificados `.p12`; firma XMLDSig, verificación y código de seguridad | `services/ecf/cifrado.js`, `certificados.js`, `firma.js` |
+| E2 | Tabla y API del certificado por empresa | migración, `routes/ecf-certificado.js` |
+| E3 | Secuencias e-NCF por empresa (tablas del conector y API) | migración, `services/ecf/secuencias.js`, `routes/ecf.js` |
+| E4 | Constructor del XML de los e-CF 31, 32 y 34 | `services/ecf/xml.js` |
+| E5 | Emisión: factura `E31/E32` con e-NCF, XML firmado y límite mensual | `routes/facturas.js`, `services/ecf/emision.js` |
+| E6 | Cliente de la DGII y simulador (semilla, token, recepción, estado) | `services/ecf/clienteDgii.js`, `simuladorDgii.js` |
+| E7 | Cola de envío con reintentos y retroceso exponencial | `services/ecf/cola.js` |
+| E8 | Representación impresa con QR y código de seguridad | `services/ecf/representacion.js` |
+| E9 | Nota de crédito electrónica (34) | `services/ecf/emision.js`, `routes/ecf.js` |
+| E10 | Vista de e-CF en el frontend | `vistas/ECF.jsx`, `Factura.jsx`, `Historial.jsx` |
+| E11 | Esquema, documentación y cierre | `schema-saas.sql` |

@@ -46,3 +46,22 @@ Siguientes módulos: `subscription` → `onboarding` → `ecf-signing` → `ecf-
 
 ### Checkpoint (fin de `onboarding`)
 - [x] Criterios 1 a 6 de `SPEC-onboarding.md` cumplidos; suite verde
+
+---
+
+# Módulos `ecf-signing` y `ecf-connector`
+
+- [ ] E1. Cifrado, lectura de certificados y firma XMLDSig (unitarias)
+- [ ] E2. Certificado digital por empresa (tabla y API)
+- [ ] E3. Secuencias e-NCF por empresa
+- [ ] E4. Constructor del XML de los e-CF 31, 32 y 34
+- [ ] E5. Emisión de facturas `E31/E32` con e-NCF y XML firmado
+- [ ] E6. Cliente de la DGII y simulador
+- [ ] E7. Cola de envío con reintentos
+- [ ] E8. Representación impresa con QR y código de seguridad
+- [ ] E9. Nota de crédito electrónica (34)
+- [ ] E10. Vista de e-CF en el frontend
+- [ ] E11. Esquema, documentación y cierre
+
+### Checkpoint (fin de los módulos e-CF)
+- [ ] Criterios de `SPEC-ecf-signing.md` y `SPEC-ecf-connector.md` cumplidos; suite verde
