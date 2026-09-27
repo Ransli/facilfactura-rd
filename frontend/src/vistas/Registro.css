@@ -1,0 +1,84 @@
+.registro-card { max-width: 460px; }
+.registro-card.ancha { max-width: 1040px; }
+
+.registro-card .login-logo { margin-bottom: 20px; }
+
+/* Indicador de pasos */
+.registro-pasos {
+  list-style: none;
+  display: flex;
+  justify-content: center;
+  gap: 18px;
+  padding: 0;
+  margin: 0 0 24px;
+  flex-wrap: wrap;
+}
+
+.registro-pasos li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.88rem;
+  color: #8a94a3;
+}
+
+.registro-pasos li span {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #e6ebf2;
+  color: #556;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.registro-pasos li.activo { color: #17406d; font-weight: 700; }
+.registro-pasos li.activo span { background: #17406d; color: #fff; }
+.registro-pasos li.hecho span { background: #1c9a5e; color: #fff; }
+
+.registro-ayuda { color: #556; font-size: 0.92rem; margin: 0 0 14px; text-align: center; }
+
+/* Tarjetas de plan */
+.registro-planes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.plan-tarjeta {
+  border: 1px solid #d9e0ea;
+  border-radius: 12px;
+  padding: 18px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.plan-tarjeta.gratis { border-color: #1c9a5e; box-shadow: 0 0 0 2px #1c9a5e22; }
+.plan-tarjeta h3 { margin: 0; color: #17406d; font-size: 1.05rem; }
+.plan-precio { margin: 0; font-size: 1.5rem; font-weight: 700; color: #17406d; }
+.plan-precio small { font-size: 0.8rem; font-weight: 500; color: #667; margin-left: 2px; }
+.plan-nota { margin: 0; color: #1c7a4d; font-size: 0.82rem; font-weight: 600; }
+.plan-desc { margin: 0; color: #667; font-size: 0.84rem; min-height: 2.4em; }
+.plan-tarjeta ul { margin: 6px 0 12px; padding-left: 18px; color: #445; font-size: 0.88rem; flex: 1; }
+.plan-tarjeta .login-btn { margin-top: auto; }
+
+.registro-ver-clave { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: #556; }
+
+.registro-volver {
+  margin: 22px auto 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  color: #17406d;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.registro-volver:hover { text-decoration: underline; }

@@ -17,7 +17,8 @@ async function request(endpoint, options = {}) {
 
   const data = await res.json()
 
-  if (res.status === 401) {
+  // El registro de empresas usa su propio token: un 401 ahí es un mensaje, no un cierre de sesión
+  if (res.status === 401 && !options.sinRedireccion) {
     localStorage.removeItem('token')
     localStorage.removeItem('usuario')
     window.location.href = '/'
@@ -33,7 +34,7 @@ async function request(endpoint, options = {}) {
 
 export const api = {
   get:    (endpoint)         => request(endpoint),
-  post:   (endpoint, body)   => request(endpoint, { method: 'POST',   body: JSON.stringify(body) }),
+  post:   (endpoint, body, opciones = {}) => request(endpoint, { method: 'POST', body: JSON.stringify(body), ...opciones }),
   put:    (endpoint, body)   => request(endpoint, { method: 'PUT',    body: JSON.stringify(body) }),
   delete: (endpoint)         => request(endpoint, { method: 'DELETE' }),
 

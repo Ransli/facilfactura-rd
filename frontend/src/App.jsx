@@ -10,6 +10,7 @@ import Historial from './vistas/Historial'
 import Configuracion from './vistas/Configuracion'
 import Usuarios from './vistas/Usuarios'
 import Login from './vistas/Login'
+import Registro from './vistas/Registro'
 import AvisoSuscripcion from './components/AvisoSuscripcion'
 import { useAuth } from './context/AuthContext'
 
@@ -37,6 +38,7 @@ export default function App() {
   const { usuario, cargando } = useAuth()
   const [vistaActiva, setVistaActiva] = useState(vistaInicial)
   const [menuAbierto, setMenuAbierto] = useState(false)
+  const [registrando, setRegistrando] = useState(false)
 
   useEffect(() => {
     const handler = (e) => {
@@ -60,7 +62,11 @@ export default function App() {
     )
   }
 
-  if (!usuario) return <Login />
+  if (!usuario) {
+    return registrando
+      ? <Registro onVolver={() => setRegistrando(false)} />
+      : <Login onRegistro={() => setRegistrando(true)} />
+  }
 
   // Un no-admin que recarga sobre Usuarios no debe quedarse en una vista
   // que su menú ni siquiera le ofrece.

@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext'
 import { api } from '../api/config'
 import './Login.css'
 
-export default function Login() {
+export default function Login({ onRegistro }) {
   const { login } = useAuth()
   const [form, setForm]         = useState({ email: '', password: '' })
   const [error, setError]       = useState('')
@@ -96,6 +96,12 @@ export default function Login() {
             }
           </button>
         </form>
+
+        {onRegistro && (
+          <button type="button" className="login-registro" onClick={onRegistro}>
+            ¿Tu empresa aún no tiene cuenta? <strong>Regístrala gratis</strong>
+          </button>
+        )}
       </div>
     </div>
   )

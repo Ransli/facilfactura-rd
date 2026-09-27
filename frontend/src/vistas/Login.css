@@ -158,3 +158,20 @@
     padding: 32px 22px 28px;
   }
 }
+
+/* ======== ENLACE A REGISTRO ======== */
+.login-registro {
+  display: block;
+  width: 100%;
+  margin-top: 22px;
+  padding: 10px;
+  background: none;
+  border: none;
+  color: #445;
+  font-size: 0.9rem;
+  cursor: pointer;
+  text-align: center;
+}
+
+.login-registro strong { color: #17406d; }
+.login-registro:hover strong { text-decoration: underline; }
