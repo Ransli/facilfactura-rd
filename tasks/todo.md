@@ -9,7 +9,7 @@ Plan: `tasks/plan.md`. Un commit por tarea, en inglés, a nombre de Ransli, sin 
 ### Checkpoint 1 (T1-T3)
 - [x] Migraciones y rollback verificados, suite completa verde, clientes aislados entre empresas
 
-- [ ] T4. Aislamiento de categorías, unidades de medida, tipos de servicio y artículos
+- [x] T4. Aislamiento de categorías, unidades de medida, tipos de servicio y artículos
 - [ ] T5. Aislamiento de configuración, métodos de pago y secuencias NCF
 - [ ] T6. Aislamiento de facturas (numeración por empresa) y panel
 - [ ] T7. Aislamiento de usuarios
