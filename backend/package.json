@@ -13,7 +13,7 @@
     "db:seed": "knex seed:run --knexfile knexfile.js",
     "db:copy-v1": "node scripts/copy-from-v1.js",
     "pretest": "node tests/prepare-db.js",
-    "test": "node --test --test-concurrency=1 \"tests/*.test.js\"",
+    "test": "node --test --test-concurrency=1 \"tests/**/*.test.js\"",
     "db:dump-schema": "node scripts/dump-schema.js"
   },
   "dependencies": {
