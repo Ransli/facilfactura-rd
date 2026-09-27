@@ -81,3 +81,24 @@ verde, una prueba de aislamiento que falló antes del cambio, y commit atómico 
 | S3 | Límites: `verificarLimite`, `GET /limites`, aplicado a usuarios y clientes | `services/suscripcion/limites.js`, `middleware/suscripcion.js` |
 | S4 | Servicios de gestión con historial (`registrarPago`, `cambiarPlan`, `suspender`…) y `GET /planes` público | `services/suscripcion/gestion.js` |
 | S5 | Esquema regenerado y cierre | `schema-saas.sql` |
+
+
+---
+
+# Módulo `onboarding` (spec: `docs/escalacion/SPEC-onboarding.md`)
+
+## Decisiones
+
+- **Token de registro** con clave derivada: los pasos 2 y 3 no aceptan un `tenant_id` del cuerpo (corrige el riesgo de toma de empresa que tiene FinanceCore).
+- **Un servicio, tres pasos:** `services/tenants/registro.js` concentra la lógica; la ruta solo valida y responde.
+- **Paso 3 de un solo uso:** se bloquea la fila de la empresa y se exige que no tenga usuarios.
+
+## Tareas
+
+| Tarea | Alcance | Archivos principales |
+|---|---|---|
+| O1 | Paso 1: crear empresa (validaciones, duplicados, límite por IP, aprovisionamiento, suscripción de prueba, token de registro) | `routes/registro.js`, `services/tenants/registro.js`, `utils/documentos.js` |
+| O2 | Paso 2: elegir plan (con seguridad del token) | `routes/registro.js` |
+| O3 | Paso 3: crear el administrador y devolver la sesión (un solo uso, concurrencia) | `routes/registro.js` |
+| O4 | Asistente de registro en el frontend | `vistas/Registro.jsx`, `Login.jsx`, `App.jsx` |
+| O5 | Esquema, documentación y cierre | `schema-saas.sql` |

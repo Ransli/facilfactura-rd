@@ -33,3 +33,16 @@ Siguientes módulos: `subscription` → `onboarding` → `ecf-signing` → `ecf-
 
 ### Checkpoint (fin de `subscription`)
 - [x] Criterios 1 a 7 de `SPEC-subscription.md` cumplidos; suite verde
+
+---
+
+# Módulo `onboarding`
+
+- [ ] O1. Paso 1 del alta: crear la empresa y aprovisionarla, con token de registro
+- [ ] O2. Paso 2: elegir plan
+- [ ] O3. Paso 3: crear el administrador y entregar la sesión
+- [ ] O4. Asistente de registro en el frontend
+- [ ] O5. Cierre del módulo
+
+### Checkpoint (fin de `onboarding`)
+- [ ] Criterios 1 a 6 de `SPEC-onboarding.md` cumplidos; suite verde
