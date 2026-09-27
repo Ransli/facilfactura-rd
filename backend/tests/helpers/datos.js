@@ -32,13 +32,14 @@ async function sembrarSecuencias(conn, tenantId) {
 export async function reiniciarDatos() {
   await pool.query('SET FOREIGN_KEY_CHECKS = 0')
   for (const t of ['factura_items', 'facturas', 'articulo_precios', 'articulos', 'categorias', 'clientes',
-                   'metodos_pago', 'nfc_secuencias', 'usuarios', 'empresas', 'certificados_digitales']) {
+                   'metodos_pago', 'nfc_secuencias', 'usuarios', 'empresas', 'certificados_digitales', 'ecf_emitidos']) {
     await pool.query(`TRUNCATE TABLE \`${t}\``)
   }
   // Empresas creadas por otras pruebas: fuera, con sus catálogos y su configuración
   for (const t of ['subscription_history', 'subscription_payments', 'tenant_subscriptions']) {
     await pool.query(`DELETE FROM \`${t}\` WHERE tenant_id <> 1`)
   }
+  await pool.query('DELETE FROM ecf_configuracion WHERE tenant_id <> 1')
   await pool.query('DELETE FROM unidades_medida WHERE tenant_id <> 1')
   await pool.query('DELETE FROM tipos_servicio WHERE tenant_id <> 1')
   await pool.query('DELETE FROM configuracion WHERE tenant_id <> 1')

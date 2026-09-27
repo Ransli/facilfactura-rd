@@ -4,6 +4,9 @@ import { verificarToken, soloFacturador, soloAdmin } from '../middleware/auth.js
 import { agregarTenantId } from '../middleware/tenant.js'
 import { verificarSuscripcion } from '../middleware/suscripcion.js'
 import { primeraReferenciaAjena, esReferenciaInexistente, mensajeReferencia } from '../utils/referencias.js'
+import { esTipoElectronico } from '../services/ecf/secuencias.js'
+import { emitirEcf, credencialesDeLaEmpresa, verificarCupoEcf } from '../services/ecf/emision.js'
+import { ErrorDeEcf } from '../services/ecf/formato.js'
 
 const router = Router()
 router.use(verificarToken, agregarTenantId, verificarSuscripcion)
@@ -59,9 +62,10 @@ router.get('/', async (req, res) => {
   const { estado, cliente_id, desde, hasta, buscar } = req.query
   try {
     let sql = `
-      SELECT f.*, c.nombre AS cliente_nombre, c.rnc AS cliente_rnc
+      SELECT f.*, c.nombre AS cliente_nombre, c.rnc AS cliente_rnc, ee.estado AS ecf_estado, ee.id AS ecf_id
       FROM facturas f
       JOIN clientes c ON c.id = f.cliente_id
+      LEFT JOIN ecf_emitidos ee ON ee.factura_id = f.id AND ee.tenant_id = f.tenant_id AND ee.tipo_ecf IN (31, 32)
       WHERE f.tenant_id = ?`
     const params = [req.tenant_id]
 
@@ -110,6 +114,15 @@ router.get('/:id', async (req, res) => {
       [req.params.id, req.tenant_id]
     )
     rows[0].items = items
+
+    // e-CF de la factura (31 o 32 y, si existe, su nota de crédito 34). Sin el XML: pesa y tiene su propia ruta.
+    const [ecf] = await pool.query(
+      `SELECT id, tipo_ecf, encf, estado, codigo_seguridad, mensaje_dgii, track_id, ecf_referencia_id
+       FROM ecf_emitidos WHERE factura_id = ? AND tenant_id = ? ORDER BY tipo_ecf`,
+      [req.params.id, req.tenant_id]
+    )
+    rows[0].ecf = ecf.find((e) => e.tipo_ecf !== 34) || null
+    rows[0].ecf_nota_credito = ecf.find((e) => e.tipo_ecf === 34) || null
 
     res.json({ ok: true, data: rows[0] })
   } catch (err) {
@@ -180,6 +193,15 @@ router.post('/', soloFacturador, async (req, res) => {
     }
     const nfc_numero = `${seq.tipo_ncf}${String(siguienteNcf).padStart(10, '0')}`
 
+    // Comprobante electrónico (E31 / E32): necesita certificado vigente y cupo en el plan. Se comprueba antes de
+    // insertar nada; aun así todo va en esta transacción, así que un fallo posterior también lo deshace.
+    const electronico = esTipoElectronico(seq.tipo_ncf)
+    let credenciales = null
+    if (electronico) {
+      credenciales = await credencialesDeLaEmpresa(conn, req.tenant_id)
+      await verificarCupoEcf(conn, req.tenant_id)
+    }
+
     // 3. Número de factura correlativo (por empresa)
     const siguienteFactura = (config.factura_ultimo_numero || 0) + 1
     const numero = `${config.factura_prefijo || 'F'}${String(siguienteFactura).padStart(6, '0')}`
@@ -187,8 +209,10 @@ router.post('/', soloFacturador, async (req, res) => {
     // 4. Cálculo de impuestos (misma lógica que la vista de factura)
     const subtotal  = round2(items.reduce((s, i) => s + subtotalItem(i), 0))
     const itbis     = round2(subtotal * (Number(config.itbis_porcentaje) / 100))
-    const ret_itbis = round2(itbis * (Number(config.ret_itbis_porcentaje) / 100))
-    const ret_isr   = round2(subtotal * (Number(config.ret_isr_porcentaje) / 100))
+    // El formato del e-CF 32 (consumo) no admite retenciones
+    const conRetencion = seq.tipo_ncf !== 'E32'
+    const ret_itbis = conRetencion ? round2(itbis * (Number(config.ret_itbis_porcentaje) / 100)) : 0
+    const ret_isr   = conRetencion ? round2(subtotal * (Number(config.ret_isr_porcentaje) / 100)) : 0
     const total     = round2(subtotal + itbis - ret_itbis - ret_isr)
 
     // 5. Insertar la factura
@@ -221,6 +245,14 @@ router.post('/', soloFacturador, async (req, res) => {
     await conn.query('UPDATE nfc_secuencias SET ultimo_usado = ? WHERE id = ? AND tenant_id = ?', [siguienteNcf, seq.id, req.tenant_id])
     await conn.query('UPDATE configuracion SET factura_ultimo_numero = ? WHERE id = ? AND tenant_id = ?', [siguienteFactura, config.id, req.tenant_id])
 
+    // 7b. e-CF: XML firmado guardado junto con la factura
+    const ecf = electronico
+      ? await emitirEcf(conn, {
+          tenantId: req.tenant_id, facturaId, tipo: Number(seq.tipo_ncf.slice(1)), encf: nfc_numero,
+          secuenciaId: seq.id, tasaItbis: Number(config.itbis_porcentaje), credenciales,
+        })
+      : undefined
+
     await conn.commit()
 
     // Con la misma conexión: pedir otra al pool mientras esta sigue tomada agota el pool
@@ -233,6 +265,7 @@ router.post('/', soloFacturador, async (req, res) => {
     res.status(201).json({
       ok: true,
       data: rows[0],
+      ecf,
       alerta_ncf,
       alerta_ncf_mensaje: alerta_ncf
         ? `⚠️ Te quedan ${disponibles} comprobantes fiscales. Solicita una nueva secuencia NCF a la DGII.`
@@ -240,6 +273,9 @@ router.post('/', soloFacturador, async (req, res) => {
     })
   } catch (err) {
     await conn.rollback()
+    if (err instanceof ErrorDeEcf) {
+      return res.status(err.estado).json({ ok: false, mensaje: err.message, ...(err.limiteAlcanzado && { limite_alcanzado: true }) })
+    }
     if (esReferenciaInexistente(err)) {
       return res.status(400).json({ ok: false, mensaje: mensajeReferencia(err) })
     }
