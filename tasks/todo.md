@@ -33,7 +33,7 @@ Un commit por tarea, en inglés, a nombre de Ransli, sin `Co-Authored-By`.
 - [x] 5 defectos cerrados, suite completa verde, app probada a mano sobre `facilfactura_saas`
 
 ## Fase 5: esquema, CI y kit
-- [ ] T13. `database/schema-saas.sql` generado con `db:dump-schema`
+- [x] T13. `database/schema-saas.sql` generado con `db:dump-schema`
 - [ ] T14. Kit de Carlos v0 en `docs/escalacion/carlos/`
 - [ ] T15. GitHub Actions con MariaDB
 - [ ] T16. Cierre: README, contexto, memoria y push a `master`
