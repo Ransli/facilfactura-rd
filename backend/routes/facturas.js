@@ -14,6 +14,22 @@ function subtotalItem({ cantidad, precio_unitario, ancho, alto }) {
   return round2(Number(cantidad) * Number(precio_unitario) * area)
 }
 
+// Devuelve el motivo si algún ítem no es facturable, o null si todos son válidos.
+// Se valida antes de abrir la transacción para no consumir NCF ni número de factura.
+function motivoItemInvalido(items) {
+  for (const [i, item] of items.entries()) {
+    const n = i + 1
+    if (!(Number(item.cantidad) > 0)) return `La cantidad del ítem ${n} debe ser mayor que cero`
+    if (!(Number(item.precio_unitario) >= 0)) return `El precio del ítem ${n} no puede ser negativo`
+    for (const medida of ['ancho', 'alto']) {
+      if (item[medida] != null && item[medida] !== '' && !(Number(item[medida]) > 0)) {
+        return `El ${medida} del ítem ${n} debe ser mayor que cero`
+      }
+    }
+  }
+  return null
+}
+
 // GET /api/facturas?estado=&cliente_id=&desde=&hasta=&buscar=
 router.get('/', async (req, res) => {
   const { estado, cliente_id, desde, hasta, buscar } = req.query
@@ -88,6 +104,8 @@ router.post('/', soloFacturador, async (req, res) => {
   if (!Array.isArray(items) || items.length === 0) {
     return res.status(400).json({ ok: false, mensaje: 'La factura debe tener al menos un artículo' })
   }
+  const motivo = motivoItemInvalido(items)
+  if (motivo) return res.status(400).json({ ok: false, mensaje: motivo })
 
   const conn = await pool.getConnection()
   try {
