@@ -34,7 +34,7 @@ Un commit por tarea, en inglés, a nombre de Ransli, sin `Co-Authored-By`.
 
 ## Fase 5: esquema, CI y kit
 - [x] T13. `database/schema-saas.sql` generado con `db:dump-schema`
-- [ ] T14. Kit de Carlos v0 en `docs/escalacion/carlos/`
+- [x] T14. Kit de Carlos v0 en `docs/escalacion/carlos/`
 - [x] T15. GitHub Actions con MariaDB
 - [ ] T16. Cierre: README, contexto, memoria y push a `master`
 
