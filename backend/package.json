@@ -25,6 +25,9 @@
     "jsonwebtoken": "^9.0.2",
     "knex": "^3.3.0",
     "multer": "^2.1.1",
-    "mysql2": "^3.10.1"
+    "mysql2": "^3.10.1",
+    "node-forge": "^1.4.0",
+    "qrcode": "^1.5.4",
+    "xml-crypto": "^6.3.2"
   }
 }
