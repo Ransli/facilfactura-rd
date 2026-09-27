@@ -26,7 +26,7 @@ Un commit por tarea, en inglés, a nombre de Ransli, sin `Co-Authored-By`.
 - [x] T8. D-1 numeración concurrente
 - [x] T9. D-2 total con retención de ITBIS parcial (servidor y vista)
 - [x] T10. D-3 cantidades y precios inválidos
-- [ ] T11. D-5 referencias inexistentes (facturas y usuarios)
+- [x] T11. D-5 referencias inexistentes (facturas y usuarios)
 - [ ] T12. D-4 permisos de clientes (servidor y vista)
 
 ### Checkpoint C (T8-T12)

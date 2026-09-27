@@ -2,6 +2,7 @@ import { Router } from 'express'
 import bcrypt from 'bcryptjs'
 import pool from '../config/database.js'
 import { verificarToken, soloAdmin } from '../middleware/auth.js'
+import { esReferenciaInexistente, mensajeReferencia } from '../utils/referencias.js'
 
 const router = Router()
 
@@ -69,6 +70,9 @@ router.post('/', async (req, res) => {
     if (err.code === 'ER_DUP_ENTRY') {
       return res.status(400).json({ ok: false, mensaje: 'Ya existe un usuario con ese email' })
     }
+    if (esReferenciaInexistente(err)) {
+      return res.status(400).json({ ok: false, mensaje: mensajeReferencia(err) })
+    }
     console.error(err)
     res.status(500).json({ ok: false, mensaje: 'Error del servidor' })
   }
@@ -107,6 +111,9 @@ router.put('/:id', async (req, res) => {
   } catch (err) {
     if (err.code === 'ER_DUP_ENTRY') {
       return res.status(400).json({ ok: false, mensaje: 'Ya existe un usuario con ese email' })
+    }
+    if (esReferenciaInexistente(err)) {
+      return res.status(400).json({ ok: false, mensaje: mensajeReferencia(err) })
     }
     console.error(err)
     res.status(500).json({ ok: false, mensaje: 'Error del servidor' })

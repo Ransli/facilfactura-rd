@@ -61,3 +61,47 @@ test('D-3 las facturas rechazadas no consumen NCF ni número de factura', async 
   await n.emitir([n.itemA(1, -10)], {}, facturador)
   await nadaSeConsumio()
 })
+
+// ── D-5: referencias que no existen ───────────────────────────
+
+test('D-5 emitir con un artículo inexistente da 400 y nombra el artículo', async () => {
+  const item = { ...n.itemA(1), articulo_id: 999999 }
+  const r = await n.emitir([item], {}, facturador)
+  assert.equal(r.status, 400)
+  assert.match(r.data.mensaje, /artículo/i)
+})
+
+test('D-5 emitir para un cliente inexistente da 400 y nombra el cliente', async () => {
+  const r = await n.emitir([n.itemA(1)], { cliente_id: 999999 }, facturador)
+  assert.equal(r.status, 400)
+  assert.match(r.data.mensaje, /cliente/i)
+})
+
+test('D-5 emitir con una empresa inexistente da 400 y nombra la empresa', async () => {
+  const r = await n.emitir([n.itemA(1)], { empresa_id: 999999 }, facturador)
+  assert.equal(r.status, 400)
+  assert.match(r.data.mensaje, /empresa/i)
+})
+
+test('D-5 una emisión con referencias inexistentes no consume NCF ni número', async () => {
+  const antes = (await t.api('GET', '/configuracion', { token: n.admin })).data.data.factura_ultimo_numero
+  await n.emitir([{ ...n.itemA(1), articulo_id: 999999 }], {}, facturador)
+  const despues = (await t.api('GET', '/configuracion', { token: n.admin })).data.data.factura_ultimo_numero
+  assert.equal(despues, antes)
+})
+
+test('D-5 crear un usuario con un rol inexistente da 400 y nombra el rol', async () => {
+  const r = await t.api('POST', '/usuarios', {
+    token: n.admin, body: { nombre: 'Rol malo', email: 'rolmalo@x.com', password: 'abc123', rol_id: 999 },
+  })
+  assert.equal(r.status, 400)
+  assert.match(r.data.mensaje, /rol/i)
+})
+
+test('D-5 editar un usuario con un rol inexistente da 400', async () => {
+  const yo = (await t.api('GET', '/auth/me', { token: n.admin })).data.usuario
+  const r = await t.api('PUT', `/usuarios/${yo.id}`, {
+    token: n.admin, body: { nombre: yo.nombre, email: yo.email, rol_id: 999 },
+  })
+  assert.equal(r.status, 400)
+})

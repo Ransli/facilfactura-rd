@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import pool from '../config/database.js'
 import { verificarToken, soloFacturador, soloAdmin } from '../middleware/auth.js'
+import { esReferenciaInexistente, mensajeReferencia } from '../utils/referencias.js'
 
 const router = Router()
 router.use(verificarToken)
@@ -212,6 +213,9 @@ router.post('/', soloFacturador, async (req, res) => {
     })
   } catch (err) {
     await conn.rollback()
+    if (esReferenciaInexistente(err)) {
+      return res.status(400).json({ ok: false, mensaje: mensajeReferencia(err) })
+    }
     console.error(err)
     res.status(500).json({ ok: false, mensaje: 'Error del servidor' })
   } finally {
