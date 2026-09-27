@@ -6,6 +6,7 @@ import { verificarSuscripcion } from '../middleware/suscripcion.js'
 import { procesarCola, programarReintento } from '../services/ecf/cola.js'
 import { representacionImpresa } from '../services/ecf/representacion.js'
 import { ErrorDeEcf } from '../services/ecf/formato.js'
+import { emitirNotaDeCredito } from '../services/ecf/emision.js'
 
 const router = Router()
 router.use(verificarToken, agregarTenantId, verificarSuscripcion)
@@ -19,7 +20,9 @@ const COLUMNAS = `e.id, e.factura_id, e.tipo_ecf, e.encf, e.ecf_referencia_id, e
 const idDe = (req) => (/^\d+$/.test(req.params.id) ? Number(req.params.id) : null)
 
 function responderError(res, err) {
-  if (err instanceof ErrorDeEcf) return res.status(err.estado).json({ ok: false, mensaje: err.message })
+  if (err instanceof ErrorDeEcf) {
+    return res.status(err.estado).json({ ok: false, mensaje: err.message, ...(err.limiteAlcanzado && { limite_alcanzado: true }) })
+  }
   console.error(err)
   res.status(500).json({ ok: false, mensaje: 'Error del servidor' })
 }
@@ -143,6 +146,16 @@ router.post('/:id/reintentar', soloAdmin, async (req, res) => {
     }
     await procesarCola(pool, { tenantId: req.tenant_id, limite: 5 })
     res.json({ ok: true, data: await detalle(pool, req.tenant_id, id) })
+  } catch (err) {
+    responderError(res, err)
+  }
+})
+
+// POST /api/ecf/:id/nota-credito — anula un e-CF aceptado con una nota de crédito electrónica (34) por el total
+router.post('/:id/nota-credito', soloAdmin, async (req, res) => {
+  try {
+    const nota = await emitirNotaDeCredito(pool, { tenantId: req.tenant_id, ecfId: idDe(req), razon: req.body?.razon })
+    res.status(201).json({ ok: true, mensaje: 'Nota de crédito emitida: la factura quedó anulada', data: nota })
   } catch (err) {
     responderError(res, err)
   }

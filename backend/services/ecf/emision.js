@@ -9,6 +9,8 @@ import { firmarXml, codigoSeguridad } from './firma.js'
 import { ErrorDeEcf, fechaHoraRD, round2 } from './formato.js'
 import { obtenerCredenciales, ErrorDeCertificado } from './certificados.js'
 import { obtenerSuscripcion } from '../suscripcion/consulta.js'
+import { hoyRD, diasEntre } from '../suscripcion/estado.js'
+import { enTransaccion } from '../../utils/transaccion.js'
 import { cupoEcf } from '../suscripcion/limites.js'
 
 /** Un ErrorDeEcf que además marca que se alcanzó el límite del plan (la ruta responde 403). */
@@ -131,6 +133,68 @@ export async function emitirEcf(conn, { tenantId, facturaId, tipo, encf, secuenc
     "SELECT DATE_FORMAT(fecha_vencimiento, '%Y-%m-%d') AS vencimiento FROM nfc_secuencias WHERE id = ? AND tenant_id = ?", [secuenciaId, tenantId])
   const documento = armarDocumento(f, items, { tipo, encf, fechaVencimientoSecuencia: seq?.vencimiento, tasaItbis, ahora })
   return guardarEcf(conn, { tenantId, facturaId, tipo, encf, documento, credenciales, ahora })
+}
+
+const DIAS_NOTA_SIN_INDICADOR = 30         // pasado este plazo desde el original, IndicadorNotaCredito = 1
+const CODIGO_ANULA_NCF = 1                 // CodigoModificacion: «anula el NCF modificado»
+const ESTADOS_ANULABLES = ['aceptado', 'aceptado_condicional']
+
+/**
+ * Anula un e-CF (31 o 32) ya aceptado por la DGII emitiendo una nota de crédito electrónica (34) por el total.
+ * Todo o nada: el e-NCF E34, el XML firmado, el marcado de la factura como anulada y el cupo mensual se confirman juntos.
+ * @returns { id, tipo_ecf, encf, estado, codigo_seguridad }
+ * @throws  ErrorDeEcf (404 no existe, 409 no anulable o ya anulado, 400 sin secuencia/certificado, 403 límite del plan)
+ */
+export async function emitirNotaDeCredito(pool, { tenantId, ecfId, razon, ahora = new Date() }) {
+  return enTransaccion(pool, async (conn) => {
+    // 1. El e-CF original, bloqueado: dos anulaciones simultáneas se turnan y la segunda ve la nota de la primera
+    const [[original]] = Number.isInteger(ecfId)
+      ? await conn.query("SELECT *, DATE_FORMAT(fecha_emision, '%Y-%m-%d') AS emision_iso FROM ecf_emitidos WHERE id = ? AND tenant_id = ? FOR UPDATE", [ecfId, tenantId])
+      : [[]]
+    if (!original) throw new ErrorDeEcf('Comprobante electrónico no encontrado', 404)
+    if (original.tipo_ecf === 34) throw new ErrorDeEcf('Una nota de crédito no se anula con otra nota de crédito', 409)
+    if (!ESTADOS_ANULABLES.includes(original.estado)) {
+      throw new ErrorDeEcf('Solo se puede anular un comprobante que la DGII ya aceptó. Espera su resultado o, si fue rechazado, emite uno nuevo.', 409)
+    }
+    const [[existente]] = await conn.query(
+      "SELECT encf FROM ecf_emitidos WHERE ecf_referencia_id = ? AND tenant_id = ? AND tipo_ecf = 34", [original.id, tenantId])
+    if (existente) throw new ErrorDeEcf(`Este comprobante ya tiene una nota de crédito (${existente.encf})`, 409)
+
+    // 2. Secuencia E34 y configuración, en el mismo orden que la emisión de facturas
+    const [[seq]] = await conn.query(
+      "SELECT * FROM nfc_secuencias WHERE tenant_id = ? AND tipo_ncf = 'E34' AND activo = 1 LIMIT 1 FOR UPDATE", [tenantId])
+    if (!seq) throw new ErrorDeEcf('No hay una secuencia NCF activa del tipo E34. Registra una en la sección NCF.')
+    await conn.query('SELECT id FROM configuracion WHERE tenant_id = ? LIMIT 1 FOR UPDATE', [tenantId])
+    const siguiente = Math.max(seq.ultimo_usado + 1, seq.desde)
+    if (siguiente > seq.hasta) throw new ErrorDeEcf('La secuencia E34 está agotada. Registra una nueva secuencia autorizada por la DGII.')
+
+    const credenciales = await credencialesDeLaEmpresa(conn, tenantId)
+    await verificarCupoEcf(conn, tenantId)
+
+    // 3. El XML: mismos ítems y montos que el original, emitido hoy y referenciándolo
+    const encf = `E34${String(siguiente).padStart(10, '0')}`
+    const f = await cargarFactura(conn, tenantId, original.factura_id)
+    const items = await cargarItems(conn, tenantId, original.factura_id)
+    const hoy = hoyRD(ahora)
+    const documento = armarDocumento(f, items, {
+      tipo: 34, encf, tasaItbis: Number(original.tasa_itbis), ahora,
+      extra: {
+        fechaEmision: hoy,
+        tipoPago: 1, fechaLimitePago: undefined,
+        indicadorNotaCredito: diasEntre(original.emision_iso, hoy) > DIAS_NOTA_SIN_INDICADOR ? 1 : 0,
+        referencia: {
+          ncfModificado: original.encf, fechaNcfModificado: original.emision_iso, codigoModificacion: CODIGO_ANULA_NCF,
+          razonModificacion: razon ? String(razon).slice(0, 90) : undefined,
+        },
+      },
+    })
+    const nota = await guardarEcf(conn, { tenantId, facturaId: original.factura_id, tipo: 34, encf, documento, credenciales, referenciaId: original.id, ahora })
+
+    // 4. Consumir el número y dejar la factura anulada
+    await conn.query('UPDATE nfc_secuencias SET ultimo_usado = ? WHERE id = ? AND tenant_id = ?', [siguiente, seq.id, tenantId])
+    await conn.query("UPDATE facturas SET estado = 'anulada', updated_at = NOW() WHERE id = ? AND tenant_id = ?", [original.factura_id, tenantId])
+    return nota
+  })
 }
 
 export { cargarFactura, cargarItems, armarDocumento, guardarEcf }

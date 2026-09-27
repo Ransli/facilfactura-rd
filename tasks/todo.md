@@ -59,7 +59,7 @@ Siguientes módulos: `subscription` → `onboarding` → `ecf-signing` → `ecf-
 - [x] E6. Cliente de la DGII y simulador
 - [x] E7. Cola de envío con reintentos
 - [x] E8. Representación impresa con QR y código de seguridad
-- [ ] E9. Nota de crédito electrónica (34)
+- [x] E9. Nota de crédito electrónica (34)
 - [ ] E10. Vista de e-CF en el frontend
 - [ ] E11. Esquema, documentación y cierre
 
