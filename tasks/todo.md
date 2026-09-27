@@ -39,7 +39,7 @@ Un commit por tarea, en inglés, a nombre de Ransli, sin `Co-Authored-By`.
 - [x] T16. Cierre: README, contexto, memoria y push a `master`
 
 ### Checkpoint D (fin del módulo)
-- [ ] Criterios 1 a 5 de la spec cumplidos, CI verde, kit de Carlos publicado
+- [x] Criterios 1 a 5 de la spec cumplidos, CI verde (run 36289779025), kit de Carlos publicado
 
 ---
 Siguientes módulos (orden): `tenancy` → `subscription` → `onboarding` → `master-console` → `ecf-signing` → `ecf-connector` → `release`.
