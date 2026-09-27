@@ -3,7 +3,7 @@ import bcrypt from 'bcryptjs'
 import pool from '../config/database.js'
 import { verificarToken, soloAdmin } from '../middleware/auth.js'
 import { agregarTenantId } from '../middleware/tenant.js'
-import { verificarSuscripcion } from '../middleware/suscripcion.js'
+import { verificarSuscripcion, verificarLimite } from '../middleware/suscripcion.js'
 import { esReferenciaInexistente, mensajeReferencia } from '../utils/referencias.js'
 
 const router = Router()
@@ -46,7 +46,7 @@ router.get('/', async (req, res) => {
 })
 
 // POST /api/usuarios — crear empleado
-router.post('/', async (req, res) => {
+router.post('/', verificarLimite('usuarios'), async (req, res) => {
   const { nombre, email, password, rol_id } = req.body
 
   if (!nombre || !email || !password || !rol_id) {

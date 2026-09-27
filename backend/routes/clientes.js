@@ -2,7 +2,7 @@ import { Router } from 'express'
 import pool from '../config/database.js'
 import { verificarToken, soloFacturador } from '../middleware/auth.js'
 import { agregarTenantId } from '../middleware/tenant.js'
-import { verificarSuscripcion } from '../middleware/suscripcion.js'
+import { verificarSuscripcion, verificarLimite } from '../middleware/suscripcion.js'
 
 const router = Router()
 router.use(verificarToken, agregarTenantId, verificarSuscripcion)
@@ -41,7 +41,7 @@ router.get('/:id', async (req, res) => {
 })
 
 // POST /api/clientes
-router.post('/', soloFacturador, async (req, res) => {
+router.post('/', soloFacturador, verificarLimite('clientes'), async (req, res) => {
   const { nombre, rnc, telefono, celular, email, direccion, ciudad, tipo } = req.body
   if (!nombre) return res.status(400).json({ ok: false, mensaje: 'El nombre es requerido' })
 
