@@ -1,0 +1,9 @@
+// Debe importarse ANTES que la app o cualquier módulo que abra la base de datos.
+// Fija la base de pruebas sin importar lo que diga el .env, para que ninguna prueba
+// pueda tocar facilfactura_saas ni la v1 (facilfactura_db).
+export const BD_PRUEBAS = 'facilfactura_test'
+
+process.env.DB_NAME = BD_PRUEBAS
+process.env.JWT_SECRET = 'secreto-solo-para-pruebas'
+process.env.JWT_EXPIRES_IN = '1h'
+process.env.NODE_ENV = 'test'

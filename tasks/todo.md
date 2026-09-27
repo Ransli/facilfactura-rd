@@ -9,10 +9,10 @@ Un commit por tarea, en inglés, a nombre de Ransli, sin `Co-Authored-By`.
 
 ## Fase 2: arnés de pruebas
 - [x] T3. Extraer `app.js` de `index.js`
-- [ ] T4. Arnés de pruebas y `npm test` con `facilfactura_test`
+- [x] T4. Arnés de pruebas y `npm test` con `facilfactura_test`
 
 ### Checkpoint A (T1-T4)
-- [ ] Migraciones y copia verificadas, app corre sobre `facilfactura_saas`, `npm test` verde
+- [x] Migraciones y copia verificadas, app corre sobre `facilfactura_saas`, `npm test` verde
 
 ## Fase 3: portar las pruebas de la Unidad IV
 - [ ] T5. Autenticación, roles y seguridad

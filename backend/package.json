@@ -11,7 +11,9 @@
     "db:rollback": "knex migrate:rollback --knexfile knexfile.js",
     "db:status": "knex migrate:status --knexfile knexfile.js",
     "db:seed": "knex seed:run --knexfile knexfile.js",
-    "db:copy-v1": "node scripts/copy-from-v1.js"
+    "db:copy-v1": "node scripts/copy-from-v1.js",
+    "pretest": "node tests/prepare-db.js",
+    "test": "node --test --test-concurrency=1 \"tests/*.test.js\""
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
