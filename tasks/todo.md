@@ -64,4 +64,4 @@ Siguientes módulos: `subscription` → `onboarding` → `ecf-signing` → `ecf-
 - [x] E11. Esquema, documentación y cierre
 
 ### Checkpoint (fin de los módulos e-CF)
-- [ ] Criterios de `SPEC-ecf-signing.md` y `SPEC-ecf-connector.md` cumplidos; suite verde
+- [x] Criterios de `SPEC-ecf-signing.md` y `SPEC-ecf-connector.md` cumplidos; suite verde
