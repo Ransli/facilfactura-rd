@@ -37,6 +37,13 @@ export async function up(knex) {
 }
 
 export async function down(knex) {
+  // Primero las claves foráneas: usan como índice a los únicos por empresa y mientras existan no se pueden borrar.
+  for (const tabla of [...TABLAS_DE_NEGOCIO].reverse()) {
+    await knex.schema.alterTable(tabla, (t) => {
+      t.dropForeign('tenant_id', `fk_${tabla}_tenant`)
+    })
+  }
+
   await knex.raw('ALTER TABLE configuracion DROP INDEX uk_configuracion_tenant')
   await knex.raw('ALTER TABLE empresas DROP INDEX uk_empresas_tenant_rnc')
   await knex.raw('ALTER TABLE empresas ADD UNIQUE KEY rnc (rnc)')
@@ -46,9 +53,6 @@ export async function down(knex) {
   await knex.raw('ALTER TABLE facturas ADD UNIQUE KEY numero (numero)')
 
   for (const tabla of [...TABLAS_DE_NEGOCIO].reverse()) {
-    await knex.schema.alterTable(tabla, (t) => {
-      t.dropForeign('tenant_id', `fk_${tabla}_tenant`)
-    })
     await knex.schema.alterTable(tabla, (t) => {
       t.dropColumn('tenant_id')
     })
