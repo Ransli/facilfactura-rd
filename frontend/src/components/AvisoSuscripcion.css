@@ -1,0 +1,28 @@
+.aviso-suscripcion {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 20px;
+  font-size: 0.9rem;
+  border-bottom: 1px solid transparent;
+}
+
+.aviso-suscripcion i { flex-shrink: 0; }
+.aviso-suscripcion .aviso-plan { margin-left: auto; font-weight: 600; white-space: nowrap; }
+
+.aviso-suscripcion.advertencia {
+  background: #fff8e1;
+  border-color: #ffe082;
+  color: #7a5500;
+}
+
+.aviso-suscripcion.bloqueada {
+  background: #fdecea;
+  border-color: #f5b5ae;
+  color: #8a1f14;
+}
+
+@media (max-width: 640px) {
+  .aviso-suscripcion { padding: 10px 14px; flex-wrap: wrap; }
+  .aviso-suscripcion .aviso-plan { margin-left: 0; }
+}

@@ -29,7 +29,7 @@ Siguientes módulos: `subscription` → `onboarding` → `ecf-signing` → `ecf-
 - [x] S2. `verificarSuscripcion` en las rutas de negocio (bloqueo = solo lectura) y `GET /api/suscripcion/mi-suscripcion`
 - [x] S3. Límites del plan (`verificarLimite`, `GET /api/suscripcion/limites`) aplicados a usuarios y clientes
 - [x] S4. Servicios de gestión con historial y `GET /api/suscripcion/planes` público
-- [ ] S5. Regenerar `schema-saas.sql` y cerrar el módulo
+- [x] S5. Regenerar `schema-saas.sql` y cerrar el módulo
 
 ### Checkpoint (fin de `subscription`)
-- [ ] Criterios 1 a 7 de `SPEC-subscription.md` cumplidos; suite verde
+- [x] Criterios 1 a 7 de `SPEC-subscription.md` cumplidos; suite verde

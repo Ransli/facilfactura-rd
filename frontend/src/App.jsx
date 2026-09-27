@@ -10,6 +10,7 @@ import Historial from './vistas/Historial'
 import Configuracion from './vistas/Configuracion'
 import Usuarios from './vistas/Usuarios'
 import Login from './vistas/Login'
+import AvisoSuscripcion from './components/AvisoSuscripcion'
 import { useAuth } from './context/AuthContext'
 
 const VISTAS = {
@@ -90,6 +91,8 @@ export default function App() {
             FácilFactura RD
           </span>
         </header>
+
+        <AvisoSuscripcion />
 
         <main id="contenedor-vista">
           <VistaActual />
