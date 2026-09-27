@@ -37,7 +37,7 @@ router.post('/login', async (req, res) => {
     await pool.query('UPDATE usuarios SET ultimo_acceso = NOW() WHERE id = ?', [usuario.id])
 
     const token = jwt.sign(
-      { id: usuario.id, nombre: usuario.nombre, email: usuario.email, rol: usuario.rol },
+      { id: usuario.id, tenant_id: usuario.tenant_id, nombre: usuario.nombre, email: usuario.email, rol: usuario.rol },
       process.env.JWT_SECRET,
       { expiresIn: process.env.JWT_EXPIRES_IN || '8h' }
     )
@@ -46,10 +46,11 @@ router.post('/login', async (req, res) => {
       ok: true,
       token,
       usuario: {
-        id:     usuario.id,
-        nombre: usuario.nombre,
-        email:  usuario.email,
-        rol:    usuario.rol,
+        id:        usuario.id,
+        tenant_id: usuario.tenant_id,
+        nombre:    usuario.nombre,
+        email:     usuario.email,
+        rol:       usuario.rol,
       },
     })
   } catch (err) {
@@ -62,7 +63,7 @@ router.post('/login', async (req, res) => {
 router.get('/me', verificarToken, async (req, res) => {
   try {
     const [rows] = await pool.query(
-      `SELECT u.id, u.nombre, u.email, r.nombre AS rol, u.ultimo_acceso
+      `SELECT u.id, u.tenant_id, u.nombre, u.email, r.nombre AS rol, u.ultimo_acceso
        FROM usuarios u
        JOIN roles r ON r.id = u.rol_id
        WHERE u.id = ? AND u.activo = 1`,

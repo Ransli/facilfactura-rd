@@ -4,10 +4,10 @@ Plan: `tasks/plan.md`. Un commit por tarea, en inglés, a nombre de Ransli, sin 
 
 - [x] T1. Tablas `planes` y `tenants` con planes iniciales y el tenant 1 (empresa migrada de la v1)
 - [x] T2. `tenant_id` en las 13 tablas de negocio (default 1), datos al tenant 1, únicos por empresa
-- [ ] T3. `agregarTenantId`, JWT con `tenant_id`, helpers de dos empresas y aislamiento de clientes
+- [x] T3. `agregarTenantId`, JWT con `tenant_id`, helpers de dos empresas y aislamiento de clientes
 
 ### Checkpoint 1 (T1-T3)
-- [ ] Migraciones y rollback verificados, suite completa verde, clientes aislados entre empresas
+- [x] Migraciones y rollback verificados, suite completa verde, clientes aislados entre empresas
 
 - [ ] T4. Aislamiento de categorías, unidades de medida, tipos de servicio y artículos
 - [ ] T5. Aislamiento de configuración, métodos de pago y secuencias NCF

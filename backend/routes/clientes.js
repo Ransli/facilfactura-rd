@@ -1,16 +1,17 @@
 import { Router } from 'express'
 import pool from '../config/database.js'
 import { verificarToken, soloFacturador } from '../middleware/auth.js'
+import { agregarTenantId } from '../middleware/tenant.js'
 
 const router = Router()
-router.use(verificarToken)
+router.use(verificarToken, agregarTenantId)
 
 // GET /api/clientes?buscar=nombre
 router.get('/', async (req, res) => {
   const { buscar } = req.query
   try {
-    let sql = `SELECT * FROM clientes WHERE activo = 1`
-    const params = []
+    let sql = `SELECT * FROM clientes WHERE tenant_id = ? AND activo = 1`
+    const params = [req.tenant_id]
 
     if (buscar) {
       sql += ` AND (nombre LIKE ? OR rnc LIKE ?)`
@@ -29,7 +30,7 @@ router.get('/', async (req, res) => {
 // GET /api/clientes/:id
 router.get('/:id', async (req, res) => {
   try {
-    const [rows] = await pool.query('SELECT * FROM clientes WHERE id = ? AND activo = 1', [req.params.id])
+    const [rows] = await pool.query('SELECT * FROM clientes WHERE id = ? AND tenant_id = ? AND activo = 1', [req.params.id, req.tenant_id])
     if (!rows[0]) return res.status(404).json({ ok: false, mensaje: 'Cliente no encontrado' })
     res.json({ ok: true, data: rows[0] })
   } catch (err) {
@@ -45,12 +46,12 @@ router.post('/', soloFacturador, async (req, res) => {
 
   try {
     const [result] = await pool.query(
-      `INSERT INTO clientes (nombre, rnc, telefono, celular, email, direccion, ciudad, tipo)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [nombre, rnc || null, telefono || null, celular || null,
+      `INSERT INTO clientes (tenant_id, nombre, rnc, telefono, celular, email, direccion, ciudad, tipo)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [req.tenant_id, nombre, rnc || null, telefono || null, celular || null,
        email || null, direccion || null, ciudad || null, tipo || 'empresa']
     )
-    const [rows] = await pool.query('SELECT * FROM clientes WHERE id = ?', [result.insertId])
+    const [rows] = await pool.query('SELECT * FROM clientes WHERE id = ? AND tenant_id = ?', [result.insertId, req.tenant_id])
     res.status(201).json({ ok: true, data: rows[0] })
   } catch (err) {
     console.error(err)
@@ -64,13 +65,16 @@ router.put('/:id', soloFacturador, async (req, res) => {
   if (!nombre) return res.status(400).json({ ok: false, mensaje: 'El nombre es requerido' })
 
   try {
+    const [existe] = await pool.query('SELECT id FROM clientes WHERE id = ? AND tenant_id = ?', [req.params.id, req.tenant_id])
+    if (!existe[0]) return res.status(404).json({ ok: false, mensaje: 'Cliente no encontrado' })
+
     await pool.query(
       `UPDATE clientes SET nombre=?, rnc=?, telefono=?, celular=?, email=?,
-       direccion=?, ciudad=?, tipo=?, updated_at=NOW() WHERE id=?`,
+       direccion=?, ciudad=?, tipo=?, updated_at=NOW() WHERE id=? AND tenant_id=?`,
       [nombre, rnc || null, telefono || null, celular || null,
-       email || null, direccion || null, ciudad || null, tipo || 'empresa', req.params.id]
+       email || null, direccion || null, ciudad || null, tipo || 'empresa', req.params.id, req.tenant_id]
     )
-    const [rows] = await pool.query('SELECT * FROM clientes WHERE id = ?', [req.params.id])
+    const [rows] = await pool.query('SELECT * FROM clientes WHERE id = ? AND tenant_id = ?', [req.params.id, req.tenant_id])
     res.json({ ok: true, data: rows[0] })
   } catch (err) {
     console.error(err)
@@ -81,7 +85,10 @@ router.put('/:id', soloFacturador, async (req, res) => {
 // DELETE /api/clientes/:id (soft delete)
 router.delete('/:id', soloFacturador, async (req, res) => {
   try {
-    await pool.query('UPDATE clientes SET activo = 0 WHERE id = ?', [req.params.id])
+    const [existe] = await pool.query('SELECT id FROM clientes WHERE id = ? AND tenant_id = ?', [req.params.id, req.tenant_id])
+    if (!existe[0]) return res.status(404).json({ ok: false, mensaje: 'Cliente no encontrado' })
+
+    await pool.query('UPDATE clientes SET activo = 0 WHERE id = ? AND tenant_id = ?', [req.params.id, req.tenant_id])
     res.json({ ok: true, mensaje: 'Cliente eliminado' })
   } catch (err) {
     console.error(err)

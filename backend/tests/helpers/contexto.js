@@ -1,5 +1,5 @@
 import './entorno.js'   // siempre primero: fija la base de pruebas antes de cargar la app
-import { USUARIOS, reiniciarDatos } from './datos.js'
+import { USUARIOS, reiniciarDatos, crearEmpresa } from './datos.js'
 
 /**
  * Levanta la app en un puerto libre y devuelve las herramientas de una prueba de integración:
@@ -39,10 +39,18 @@ export async function iniciar({ reiniciar = true } = {}) {
     return { token: r.data.token, usuario: r.data.usuario }
   }
 
+  /** Inicia sesión como un rol de una empresa creada con crearEmpresa(). */
+  async function sesionDe(empresa, rol) {
+    const u = empresa.usuarios[rol]
+    const r = await api('POST', '/auth/login', { body: { email: u.email, password: u.password } })
+    if (r.status !== 200) throw new Error(`No se pudo iniciar sesión como ${rol} de ${empresa.nombre}: ${r.status}`)
+    return { token: r.data.token, usuario: r.data.usuario }
+  }
+
   async function cerrar() {
     await new Promise((resolve) => servidor.close(resolve))
     await pool.end()
   }
 
-  return { api, sesion, cerrar, pool, base }
+  return { api, sesion, sesionDe, crearEmpresa, cerrar, pool, base }
 }
