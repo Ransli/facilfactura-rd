@@ -14,6 +14,7 @@
     "db:copy-v1": "node scripts/copy-from-v1.js",
     "pretest": "node tests/prepare-db.js",
     "dgii:simulador": "node services/ecf/simuladorDgii.js",
+    "master:crear": "node scripts/crear-master.js",
     "test": "node --test --test-concurrency=1 \"tests/**/*.test.js\"",
     "db:dump-schema": "node scripts/dump-schema.js"
   },
