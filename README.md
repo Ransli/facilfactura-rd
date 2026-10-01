@@ -201,7 +201,8 @@ Validación y formato automático de RNC (9 dígitos) y cédula (11 dígitos).
 Este repositorio evoluciona de un sistema de una sola empresa (v1) a una plataforma multi-tenant con
 facturación electrónica (e-CF) y contabilidad. La documentación del trabajo está en `docs/escalacion/`:
 el mapa de capacidades, la especificación de cada módulo y la guía para el equipo. El plan de tareas activo
-está en `tasks/`.
+está en `tasks/`. Para desplegar la plataforma en un servidor (entorno real o de prueba), ver
+[`docs/DESPLIEGUE.md`](docs/DESPLIEGUE.md).
 
 ## Autores
 

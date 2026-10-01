@@ -1,0 +1,45 @@
+# Plantilla de nginx para FácilFactura RD. Copia esto a /etc/nginx/sites-available/facilfactura
+# y enlázalo:  sudo ln -s /etc/nginx/sites-available/facilfactura /etc/nginx/sites-enabled/
+# Reemplaza TU-SUBDOMINIO.TU-SERVIDOR.COM por el subdominio real antes de activarlo.
+#
+# Frontend y API quedan en el MISMO dominio (el frontend pide a /api, nginx lo reenvía al backend de Node):
+# así el navegador nunca cruza de origen y no hace falta configurar CORS para nada.
+
+server {
+    listen 80;
+    server_name TU-SUBDOMINIO.TU-SERVIDOR.COM;
+
+    # El frontend compilado (npm run build --prefix frontend) queda en frontend/dist
+    root /var/www/facilfactura-rd/frontend/dist;
+    index index.html;
+
+    # SPA: cualquier ruta que no sea un archivo real cae en index.html (React Router lo resuelve del lado del cliente)
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    # API del backend (Node/Express en el puerto interno que use PM2, por defecto 3002)
+    location /api/ {
+        proxy_pass http://127.0.0.1:3002;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # Logos y otros archivos subidos por las empresas
+    location /uploads/ {
+        proxy_pass http://127.0.0.1:3002;
+        proxy_set_header Host $host;
+    }
+
+    client_max_body_size 10M;   # un poco por encima de MAX_FILE_SIZE_MB del backend (logos)
+}
+
+# Después de activar este archivo y antes de pedir HTTPS:
+#   sudo nginx -t && sudo systemctl reload nginx
+#
+# HTTPS con Let's Encrypt (mismo mecanismo que ya usas para sistema-financiero-react):
+#   sudo certbot --nginx -d TU-SUBDOMINIO.TU-SERVIDOR.COM
+# certbot reescribe este archivo para agregar el bloque "listen 443" y el redirect de 80 a 443 automáticamente.

@@ -1,7 +1,9 @@
 // Cliente de la consola master. Guarda su sesión aparte de la app de empresa (localStorage con otras claves:
 // `master_token`/`master`), para que abrir la consola en una pestaña nunca cierre la sesión de una empresa
 // abierta en otra, y viceversa.
-const BASE_URL = 'http://localhost:3002/api/master'
+import { BASE_URL as API_URL } from '../api/config'
+
+const BASE_URL = `${API_URL}/master`
 
 const getToken = () => localStorage.getItem('master_token')
 
@@ -34,5 +36,7 @@ export const masterApi = {
   put:    (endpoint, body)  => request(endpoint, { method: 'PUT',  body: JSON.stringify(body ?? {}) }),
 }
 
-/** URL de la app de la empresa con el token de impersonación en un fragmento de la URL (nunca en el historial del servidor). */
-export const urlDeImpersonacion = (token) => `http://localhost:5175/#impersonar=${token}`
+/** URL de la app de la empresa con el token de impersonación en un fragmento de la URL (nunca en el historial del servidor).
+ *  El mismo origen desde el que se sirve la consola master: en producción, la app de empresa vive en la raíz ("/")
+ *  de ese mismo dominio (ver main.jsx: solo el prefijo /master cambia qué app se muestra). */
+export const urlDeImpersonacion = (token) => `${window.location.origin}/#impersonar=${token}`

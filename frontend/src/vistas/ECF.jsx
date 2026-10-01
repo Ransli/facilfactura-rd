@@ -1,10 +1,8 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
-import { api } from '../api/config'
+import { api, API_ORIGIN } from '../api/config'
 import Toast, { useToast } from '../components/Toast'
 import { useAuth } from '../context/AuthContext'
 import './vistas.css'
-
-const API_ORIGIN = 'http://localhost:3002'
 
 const AMBIENTES = [
   { valor: 'TesteCF', label: 'TesteCF — pruebas' },

@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect, useCallback } from 'react'
 import { Fragment } from 'react'
 import './Factura.css'
-import { api } from '../api/config'
+import { api, API_ORIGIN } from '../api/config'
 import Toast, { useToast } from '../components/Toast'
 import { guardarBorrador, leerBorrador, limpiarBorrador } from '../utils/borrador'
 
@@ -294,7 +294,7 @@ export default function Factura() {
       {/* ── ENCABEZADO ── */}
       <div className="factura-header">
         {empresa?.logo_path
-          ? <img src={`http://localhost:3002${empresa.logo_path}`} alt="Logo empresa" className="factura-logo" />
+          ? <img src={`${API_ORIGIN}${empresa.logo_path}`} alt="Logo empresa" className="factura-logo" />
           : <img src="/logo.svg" alt="Logo empresa" className="factura-logo" />
         }
         <div className="factura-titulo">

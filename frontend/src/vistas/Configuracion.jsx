@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { api } from '../api/config'
+import { api, API_ORIGIN } from '../api/config'
 import Toast, { useToast } from '../components/Toast'
 import {
   formatearRncCedula, formatearTelefono, formatearCuenta, formatearPorcentaje,
@@ -7,8 +7,6 @@ import {
   validarPorcentaje, validarRequerido,
 } from '../utils/formato'
 import './vistas.css'
-
-const API_ORIGIN = 'http://localhost:3002'
 
 const EMPRESA_VACIA = {
   empresa_nombre: '', empresa_rnc: '', telefono: '', celular: '', email: '',

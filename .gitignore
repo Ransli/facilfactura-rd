@@ -7,6 +7,11 @@ node_modules/
 .env
 .env.local
 .env.*.local
+.env.production
+.env.production.local
+
+# Logs de PM2 en el servidor (ver ecosystem.config.cjs)
+logs/
 
 # Build / dist
 dist/

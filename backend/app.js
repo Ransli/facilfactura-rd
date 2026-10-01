@@ -32,8 +32,12 @@ const __dirname  = path.dirname(__filename)
 const app  = express()
 
 // ── Middlewares globales ──────────────────────────────────────
+// En producción, nginx sirve el frontend y reenvía /api al mismo dominio: las peticiones del navegador son del
+// mismo origen y CORS ni interviene. Esta lista es para cuando SÍ hay un origen distinto (otro dominio, o probar
+// el frontend de Vite contra un backend remoto). CORS_ORIGIN admite varios separados por coma.
+const origenesPermitidos = (process.env.CORS_ORIGIN || 'http://localhost:5175').split(',').map((o) => o.trim())
 app.use(cors({
-  origin: ['http://localhost:5175'],
+  origin: origenesPermitidos,
   credentials: true,
 }))
 

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { masterApi, urlDeImpersonacion } from './masterApi'
+import { BASE_URL as API_URL } from '../api/config'
 import '../vistas/Login.css'
 import '../vistas/vistas.css'
 
@@ -227,7 +228,7 @@ export default function MasterApp() {
     if (!master) return
     setCargando(true)
     try {
-      const [emp, cfg] = await Promise.all([masterApi.get('/empresas'), fetch('http://localhost:3002/api/suscripcion/planes').then((r) => r.json())])
+      const [emp, cfg] = await Promise.all([masterApi.get('/empresas'), fetch(`${API_URL}/suscripcion/planes`).then((r) => r.json())])
       setEmpresas(emp.data)
       setPlanes(cfg.data || [])
     } catch { /* silencioso: masterApi ya recarga la página en un 401 */ }

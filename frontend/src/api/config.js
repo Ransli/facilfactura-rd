@@ -1,4 +1,8 @@
-const BASE_URL = 'http://localhost:3002/api'
+// En desarrollo apunta al backend local; en producción se fija con VITE_API_URL en el .env del build
+// (ver .env.production.example) — así el mismo código sirve en cualquier servidor sin tocarlo.
+export const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3002/api'
+// Origen del backend sin el /api final: para servir archivos que no pasan por la API (p. ej. /uploads/logo.png).
+export const API_ORIGIN = BASE_URL.replace(/\/api\/?$/, '')
 
 function getToken() {
   return localStorage.getItem('token')
