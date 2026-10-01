@@ -1,8 +1,8 @@
 -- ============================================================
 -- FácilFactura RD — esquema de la plataforma SaaS (base facilfactura_saas)
 -- ARCHIVO GENERADO con "npm run db:dump-schema": no editar a mano.
--- Fuente de verdad: database/migrations/ (7 migraciones aplicadas al generar este archivo).
--- Contiene 22 tablas y los datos de referencia; no contiene datos de ninguna empresa.
+-- Fuente de verdad: database/migrations/ (8 migraciones aplicadas al generar este archivo).
+-- Contiene 23 tablas y los datos de referencia; no contiene datos de ninguna empresa.
 -- ============================================================
 
 SET NAMES utf8mb4;
@@ -463,21 +463,35 @@ CREATE TABLE `usuarios` (
   CONSTRAINT `usuarios_ibfk_1` FOREIGN KEY (`rol_id`) REFERENCES `roles` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Tabla usuarios_plataforma
+CREATE TABLE `usuarios_plataforma` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `nombre` varchar(150) NOT NULL,
+  `email` varchar(150) NOT NULL,
+  `password_hash` varchar(255) NOT NULL,
+  `activo` tinyint(1) NOT NULL DEFAULT 1,
+  `ultimo_acceso` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `usuarios_plataforma_email_unique` (`email`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 -- Datos de referencia: roles
 INSERT INTO `roles` (`id`, `nombre`, `descripcion`, `created_at`) VALUES
-  (1, 'admin', 'Acceso total al sistema', '2026-09-27 02:45:40.000'),
-  (2, 'facturador', 'Puede crear y emitir facturas', '2026-09-27 02:45:40.000'),
-  (3, 'visor', 'Solo puede consultar información', '2026-09-27 02:45:40.000');
+  (1, 'admin', 'Acceso total al sistema', '2026-09-30 20:46:44.000'),
+  (2, 'facturador', 'Puede crear y emitir facturas', '2026-09-30 20:46:44.000'),
+  (3, 'visor', 'Solo puede consultar información', '2026-09-30 20:46:44.000');
 
 -- Datos de referencia: tipos_servicio
 INSERT INTO `tipos_servicio` (`id`, `nombre`, `descripcion`, `activo`, `created_at`, `updated_at`, `tenant_id`) VALUES
-  (1, 'Instalación de rótulos y señalización', 'Servicio de instalación de materiales publicitarios y señalización', 1, '2026-09-27 02:45:40.000', '2026-09-27 02:45:40.000', 1),
-  (2, 'Impresión de materiales publicitarios', 'Impresión de banners, lonas, vinilos y materiales gráficos', 1, '2026-09-27 02:45:40.000', '2026-09-27 02:45:40.000', 1),
-  (3, 'Diseño gráfico', 'Creación y diseño de artes, logos y materiales gráficos', 1, '2026-09-27 02:45:40.000', '2026-09-27 02:45:40.000', 1),
-  (4, 'Alquiler de equipos', 'Renta de grúas, plataformas y equipos especiales para instalación', 1, '2026-09-27 02:45:40.000', '2026-09-27 02:45:40.000', 1),
-  (5, 'Venta de materiales', 'Venta al detalle de materiales: lonas, yaldas, vinilos y similares', 1, '2026-09-27 02:45:40.000', '2026-09-27 02:45:40.000', 1),
-  (6, 'Mano de obra', 'Servicios de instalación, montaje y trabajo manual', 1, '2026-09-27 02:45:40.000', '2026-09-27 02:45:40.000', 1),
-  (7, 'Servicio general', 'Servicio de naturaleza general', 1, '2026-09-27 02:45:40.000', '2026-09-27 02:45:40.000', 1);
+  (1, 'Instalación de rótulos y señalización', 'Servicio de instalación de materiales publicitarios y señalización', 1, '2026-09-30 20:46:44.000', '2026-09-30 20:46:44.000', 1),
+  (2, 'Impresión de materiales publicitarios', 'Impresión de banners, lonas, vinilos y materiales gráficos', 1, '2026-09-30 20:46:44.000', '2026-09-30 20:46:44.000', 1),
+  (3, 'Diseño gráfico', 'Creación y diseño de artes, logos y materiales gráficos', 1, '2026-09-30 20:46:44.000', '2026-09-30 20:46:44.000', 1),
+  (4, 'Alquiler de equipos', 'Renta de grúas, plataformas y equipos especiales para instalación', 1, '2026-09-30 20:46:44.000', '2026-09-30 20:46:44.000', 1),
+  (5, 'Venta de materiales', 'Venta al detalle de materiales: lonas, yaldas, vinilos y similares', 1, '2026-09-30 20:46:44.000', '2026-09-30 20:46:44.000', 1),
+  (6, 'Mano de obra', 'Servicios de instalación, montaje y trabajo manual', 1, '2026-09-30 20:46:44.000', '2026-09-30 20:46:44.000', 1),
+  (7, 'Servicio general', 'Servicio de naturaleza general', 1, '2026-09-30 20:46:44.000', '2026-09-30 20:46:44.000', 1);
 
 -- Datos de referencia: unidades_medida
 INSERT INTO `unidades_medida` (`id`, `nombre`, `abreviatura`, `activo`, `tenant_id`) VALUES
@@ -497,6 +511,6 @@ INSERT INTO `unidades_medida` (`id`, `nombre`, `abreviatura`, `activo`, `tenant_
 
 -- Datos de referencia: configuracion
 INSERT INTO `configuracion` (`id`, `empresa_id`, `factura_ultimo_numero`, `factura_prefijo`, `moneda`, `itbis_porcentaje`, `ret_itbis_porcentaje`, `ret_isr_porcentaje`, `nfc_alerta_porcentaje`, `updated_at`, `tenant_id`) VALUES
-  (1, NULL, 0, 'F', 'DOP', '18.00', '100.00', '10.00', 80, '2026-09-27 02:45:40.000', 1);
+  (1, NULL, 0, 'F', 'DOP', '18.00', '100.00', '10.00', 80, '2026-09-30 20:46:44.000', 1);
 
 SET FOREIGN_KEY_CHECKS = 1;
