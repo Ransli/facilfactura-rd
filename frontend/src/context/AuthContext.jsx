@@ -8,6 +8,21 @@ export function AuthProvider({ children }) {
   const [cargando, setCargando] = useState(true)
 
   useEffect(() => {
+    // La consola master abre esta app con #impersonar=<token> (nunca como ?query, para que el token no
+    // viaje en el Referer ni quede en ningún log del servidor). Se adopta como la sesión de este navegador,
+    // igual que un login normal, y se limpia el fragmento de la URL enseguida.
+    const enlaceImpersonacion = /^#impersonar=(.+)$/.exec(window.location.hash)
+    if (enlaceImpersonacion) {
+      const tokenImpersonado = enlaceImpersonacion[1]
+      history.replaceState(null, '', window.location.pathname + window.location.search)
+      localStorage.setItem('token', tokenImpersonado)   // para que api.get() lo use al pedir /auth/me
+      api.get('/auth/me')
+        .then((res) => login(tokenImpersonado, res.usuario))
+        .catch(() => logout())
+        .finally(() => setCargando(false))
+      return
+    }
+
     const token    = localStorage.getItem('token')
     const usuarioG = localStorage.getItem('usuario')
 
