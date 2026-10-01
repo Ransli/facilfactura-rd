@@ -43,10 +43,10 @@ const PASOS = [
 ]
 
 const CAPTURAS = [
-  { src: '/capturas/02-panel.png', alt: 'Panel de control de FácilFactura RD', titulo: 'Panel de control', texto: 'Facturación del mes, ITBIS y evolución de los últimos 6 meses.' },
-  { src: '/capturas/03-factura.png', alt: 'Emisión de facturas', titulo: 'Emisión de facturas', texto: 'Cálculo automático de ITBIS, retenciones y asignación del NCF.' },
-  { src: '/capturas/06-ncf.png', alt: 'Secuencias NCF', titulo: 'Secuencias NCF', texto: 'Rangos autorizados por la DGII, con alertas de agotamiento.' },
-  { src: '/capturas/05-clientes.png', alt: 'Gestión de clientes', titulo: 'Gestión de clientes', texto: 'Clientes con RNC o cédula validados, listos para facturar.' },
+  { src: '/capturas/02-panel.jpg', alt: 'Panel de control de FácilFactura RD', titulo: 'Panel de control', texto: 'Facturación del mes, ITBIS y evolución de los últimos 6 meses.' },
+  { src: '/capturas/03-factura.jpg', alt: 'Emisión de facturas', titulo: 'Emisión de facturas', texto: 'Cálculo automático de ITBIS, retenciones y asignación del NCF.' },
+  { src: '/capturas/06-ncf.jpg', alt: 'Secuencias NCF', titulo: 'Secuencias NCF', texto: 'Rangos autorizados por la DGII, con alertas de agotamiento.' },
+  { src: '/capturas/05-clientes.jpg', alt: 'Gestión de clientes', titulo: 'Gestión de clientes', texto: 'Clientes con RNC o cédula validados, listos para facturar.' },
 ]
 
 const dinero = (n) => Number(n).toLocaleString('es-DO', { minimumFractionDigits: 0, maximumFractionDigits: 0 })
@@ -120,7 +120,7 @@ export default function Landing({ onIniciarSesion, onCrearCuenta }) {
             <div className="landing-browser-barra">
               <span></span><span></span><span></span>
             </div>
-            <img src="/capturas/02-panel.png" alt="Panel de control de FácilFactura RD" />
+            <img src="/capturas/02-panel.jpg" alt="Panel de control de FácilFactura RD" />
           </div>
         </div>
       </section>
