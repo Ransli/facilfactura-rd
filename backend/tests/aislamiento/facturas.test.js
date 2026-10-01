@@ -1,6 +1,7 @@
 import { test, before, after } from 'node:test'
 import assert from 'node:assert/strict'
 import { iniciar } from '../helpers/contexto.js'
+import { hoyRD } from '../../services/suscripcion/estado.js'
 
 let t, A, B, adminA, adminB
 let ctxA, ctxB           // datos de facturación de cada empresa
@@ -31,7 +32,7 @@ async function datosDeFacturacion(token, empresa) {
 const emitir = (token, ctx, cambios = {}, itemCambios = {}) => t.api('POST', '/facturas', {
   token,
   body: {
-    cliente_id: ctx.cliente.id, empresa_id: ctx.empresaId, fecha: '2026-09-27',
+    cliente_id: ctx.cliente.id, empresa_id: ctx.empresaId, fecha: hoyRD(),
     items: [{ articulo_id: ctx.articulo.id, cantidad: 1, unidad_medida_id: ctx.unidad.id, precio_unitario: 1000, ...itemCambios }],
     ...cambios,
   },
