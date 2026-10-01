@@ -12,6 +12,7 @@ import Configuracion from './vistas/Configuracion'
 import Usuarios from './vistas/Usuarios'
 import Login from './vistas/Login'
 import Registro from './vistas/Registro'
+import Landing from './vistas/Landing'
 import AvisoSuscripcion from './components/AvisoSuscripcion'
 import { useAuth } from './context/AuthContext'
 
@@ -40,7 +41,8 @@ export default function App() {
   const { usuario, cargando } = useAuth()
   const [vistaActiva, setVistaActiva] = useState(vistaInicial)
   const [menuAbierto, setMenuAbierto] = useState(false)
-  const [registrando, setRegistrando] = useState(false)
+  // 'landing' (bienvenida pública) → 'login' / 'registro'. Solo aplica cuando no hay sesión.
+  const [vistaPublica, setVistaPublica] = useState('landing')
 
   useEffect(() => {
     const handler = (e) => {
@@ -65,9 +67,11 @@ export default function App() {
   }
 
   if (!usuario) {
-    return registrando
-      ? <Registro onVolver={() => setRegistrando(false)} />
-      : <Login onRegistro={() => setRegistrando(true)} />
+    if (vistaPublica === 'registro') return <Registro onVolver={() => setVistaPublica('login')} />
+    if (vistaPublica === 'login') {
+      return <Login onRegistro={() => setVistaPublica('registro')} onVolver={() => setVistaPublica('landing')} />
+    }
+    return <Landing onIniciarSesion={() => setVistaPublica('login')} onCrearCuenta={() => setVistaPublica('registro')} />
   }
 
   // Un no-admin que recarga sobre Usuarios no debe quedarse en una vista
