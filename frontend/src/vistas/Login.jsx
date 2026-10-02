@@ -35,14 +35,13 @@ export default function Login({ onRegistro, onVolver }) {
   return (
     <div className="login-fondo">
       <div className="login-card">
+        {onVolver && (
+          <button type="button" className="login-volver-inicio" onClick={onVolver}>
+            <i className="fas fa-arrow-left"></i> Volver al inicio
+          </button>
+        )}
         <div className="login-logo">
-          {onVolver ? (
-            <button type="button" className="login-logo-boton" onClick={onVolver} title="Volver al inicio">
-              <img src="/logo.svg" alt="Logo" />
-            </button>
-          ) : (
-            <img src="/logo.svg" alt="Logo" />
-          )}
+          <img src="/logo.svg" alt="Logo" />
           <h1>FácilFactura RD</h1>
         </div>
 

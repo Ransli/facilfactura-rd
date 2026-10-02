@@ -37,12 +37,41 @@ function vistaInicial() {
   return guardada && VISTAS[guardada] ? guardada : 'dashboard'
 }
 
+// Las vistas públicas (sin sesión) tienen una URL propia para que se puedan
+// compartir/recargar y para que el botón "atrás" del navegador funcione.
+const RUTA_POR_VISTA_PUBLICA = { landing: '/', login: '/login', registro: '/registro' }
+const VISTA_PUBLICA_POR_RUTA = { '/login': 'login', '/registro': 'registro' }
+function vistaPublicaDesdeURL() {
+  return VISTA_PUBLICA_POR_RUTA[window.location.pathname] || 'landing'
+}
+
 export default function App() {
   const { usuario, cargando } = useAuth()
   const [vistaActiva, setVistaActiva] = useState(vistaInicial)
   const [menuAbierto, setMenuAbierto] = useState(false)
   // 'landing' (bienvenida pública) → 'login' / 'registro'. Solo aplica cuando no hay sesión.
-  const [vistaPublica, setVistaPublica] = useState('landing')
+  const [vistaPublica, setVistaPublica] = useState(vistaPublicaDesdeURL)
+
+  // Cambia de vista pública y refleja la ruta en la URL (en vez de quedarse
+  // siempre en "/"), para que se pueda recargar, compartir o volver con el
+  // botón "atrás" del navegador.
+  const irAVistaPublica = (nueva) => {
+    setVistaPublica(nueva)
+    const ruta = RUTA_POR_VISTA_PUBLICA[nueva]
+    if (window.location.pathname !== ruta) window.history.pushState(null, '', ruta)
+  }
+
+  useEffect(() => {
+    const handler = () => setVistaPublica(vistaPublicaDesdeURL())
+    window.addEventListener('popstate', handler)
+    return () => window.removeEventListener('popstate', handler)
+  }, [])
+
+  // Si el usuario inicia sesión estando en /login o /registro, esas rutas ya
+  // no aplican (la app autenticada no usa rutas propias): se limpia la URL.
+  useEffect(() => {
+    if (usuario && window.location.pathname !== '/') window.history.replaceState(null, '', '/')
+  }, [usuario])
 
   useEffect(() => {
     const handler = (e) => {
@@ -67,11 +96,13 @@ export default function App() {
   }
 
   if (!usuario) {
-    if (vistaPublica === 'registro') return <Registro onVolver={() => setVistaPublica('login')} />
-    if (vistaPublica === 'login') {
-      return <Login onRegistro={() => setVistaPublica('registro')} onVolver={() => setVistaPublica('landing')} />
+    if (vistaPublica === 'registro') {
+      return <Registro onVolver={() => irAVistaPublica('login')} onVolverInicio={() => irAVistaPublica('landing')} />
     }
-    return <Landing onIniciarSesion={() => setVistaPublica('login')} onCrearCuenta={() => setVistaPublica('registro')} />
+    if (vistaPublica === 'login') {
+      return <Login onRegistro={() => irAVistaPublica('registro')} onVolver={() => irAVistaPublica('landing')} />
+    }
+    return <Landing onIniciarSesion={() => irAVistaPublica('login')} onCrearCuenta={() => irAVistaPublica('registro')} />
   }
 
   // Un no-admin que recarga sobre Usuarios no debe quedarse en una vista

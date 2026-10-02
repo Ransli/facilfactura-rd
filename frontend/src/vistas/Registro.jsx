@@ -13,7 +13,7 @@ const limite = (n) => (n === -1 ? 'Ilimitados' : n.toLocaleString('es-DO'))
 
 // Asistente de alta de una empresa: 1) datos, 2) plan, 3) administrador. Al terminar, el administrador ya tiene sesión.
 // El paso 1 devuelve un token de registro que los pasos 2 y 3 mandan en la cabecera Authorization.
-export default function Registro({ onVolver }) {
+export default function Registro({ onVolver, onVolverInicio }) {
   const { login } = useAuth()
   const [paso, setPaso] = useState(0)
   const [error, setError] = useState('')
@@ -91,6 +91,11 @@ export default function Registro({ onVolver }) {
   return (
     <div className="login-fondo">
       <div className={`login-card registro-card${paso === 1 ? ' ancha' : ''}`}>
+        {onVolverInicio && (
+          <button type="button" className="login-volver-inicio" onClick={onVolverInicio}>
+            <i className="fas fa-arrow-left"></i> Volver al inicio
+          </button>
+        )}
         <div className="login-logo">
           <img src="/logo.svg" alt="Logo" />
           <h1>Crea tu cuenta en FácilFactura RD</h1>
