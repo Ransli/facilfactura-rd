@@ -23,6 +23,9 @@ import ecfCertificadoRoutes from './routes/ecf-certificado.js'
 import ecfRoutes from './routes/ecf.js'
 import masterAuthRoutes from './routes/master-auth.js'
 import masterEmpresasRoutes from './routes/master-empresas.js'
+import masterPlanesRoutes from './routes/master-planes.js'
+import masterDashboardRoutes from './routes/master-dashboard.js'
+import masterPagosRoutes from './routes/master-pagos.js'
 
 dotenv.config()
 
@@ -66,6 +69,9 @@ app.use('/api/ecf/certificado', ecfCertificadoRoutes)
 app.use('/api/ecf', ecfRoutes)
 app.use('/api/master/auth', masterAuthRoutes)
 app.use('/api/master/empresas', masterEmpresasRoutes)
+app.use('/api/master/planes', masterPlanesRoutes)
+app.use('/api/master/dashboard', masterDashboardRoutes)
+app.use('/api/master/pagos', masterPagosRoutes)
 
 // ── Health check ──────────────────────────────────────────────
 app.get('/api/health', (_req, res) => {
