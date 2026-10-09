@@ -35,7 +35,7 @@ function BarraLimite({ etiqueta, actual, max }) {
   )
 }
 
-export default function EmpresaDetalle({ tenantId, onVolver, onCambio }) {
+export default function EmpresaDetalle({ tenantId, onVolver, onCambio, volverALabel = 'empresas' }) {
   const [d, setD] = useState(null)
   const [planes, setPlanes] = useState([])
   const [error, setError] = useState('')
@@ -77,7 +77,7 @@ export default function EmpresaDetalle({ tenantId, onVolver, onCambio }) {
 
   if (error && !d) return (
     <div>
-      <BotonVolver onVolver={onVolver} />
+      <BotonVolver onVolver={onVolver} etiqueta={volverALabel} />
       <div className="alerta-box alerta-danger"><i className="fas fa-circle-exclamation"></i>{error}</div>
     </div>
   )
@@ -87,7 +87,7 @@ export default function EmpresaDetalle({ tenantId, onVolver, onCambio }) {
 
   return (
     <div>
-      <BotonVolver onVolver={onVolver} />
+      <BotonVolver onVolver={onVolver} etiqueta={volverALabel} />
 
       <div className="vista-header">
         <h2 className="vista-titulo"><i className="fas fa-building"></i> {d.tenant.nombre}</h2>
@@ -115,7 +115,7 @@ export default function EmpresaDetalle({ tenantId, onVolver, onCambio }) {
       {pestana === 'resumen' && (
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18 }} className="form-grid">
           <div className="vista-card">
-            <h3 style={{ margin: '0 0 12px', color: '#17406d', fontSize: '1rem' }}>Plan y acciones</h3>
+            <h3 style={{ margin: '0 0 12px', color: '#3c1f6b', fontSize: '1rem' }}>Plan y acciones</h3>
             <div className="form-grupo" style={{ marginBottom: 14 }}>
               <label>Plan asignado</label>
               <select value={d.suscripcion.plan.id} disabled={ocupado} onChange={(e) => cambiarPlan(e.target.value)}>
@@ -149,7 +149,7 @@ export default function EmpresaDetalle({ tenantId, onVolver, onCambio }) {
           </div>
 
           <div className="vista-card">
-            <h3 style={{ margin: '0 0 12px', color: '#17406d', fontSize: '1rem' }}>Uso del plan</h3>
+            <h3 style={{ margin: '0 0 12px', color: '#3c1f6b', fontSize: '1rem' }}>Uso del plan</h3>
             <BarraLimite etiqueta="Usuarios" actual={d.limites.usuarios.actual} max={d.limites.usuarios.max} />
             <BarraLimite etiqueta="Clientes" actual={d.limites.clientes.actual} max={d.limites.clientes.max} />
             <BarraLimite etiqueta="e-CF este mes" actual={d.limites.ecf_mes.actual} max={d.limites.ecf_mes.max} />
@@ -164,7 +164,7 @@ export default function EmpresaDetalle({ tenantId, onVolver, onCambio }) {
 
       {pestana === 'pagos' && (
         <div className="vista-card">
-          <h3 style={{ margin: '0 0 12px', color: '#17406d', fontSize: '1rem' }}>Registrar pago</h3>
+          <h3 style={{ margin: '0 0 12px', color: '#3c1f6b', fontSize: '1rem' }}>Registrar pago</h3>
           <form onSubmit={registrarPago} className="form-grid" style={{ marginBottom: 20 }}>
             <div className="form-grupo">
               <label>Monto (RD$)</label>
@@ -188,7 +188,7 @@ export default function EmpresaDetalle({ tenantId, onVolver, onCambio }) {
             </div>
           </form>
 
-          <h3 style={{ margin: '0 0 12px', color: '#17406d', fontSize: '1rem' }}>Pagos de esta empresa</h3>
+          <h3 style={{ margin: '0 0 12px', color: '#3c1f6b', fontSize: '1rem' }}>Pagos de esta empresa</h3>
           <div className="tabla-wrap">
             <table className="tabla-crud">
               <thead><tr><th>Fecha</th><th>Monto</th><th>Método</th><th>Referencia</th><th>Estado</th></tr></thead>
@@ -212,7 +212,7 @@ export default function EmpresaDetalle({ tenantId, onVolver, onCambio }) {
 
       {pestana === 'historial' && (
         <div className="vista-card">
-          <h3 style={{ margin: '0 0 12px', color: '#17406d', fontSize: '1rem' }}>Historial completo</h3>
+          <h3 style={{ margin: '0 0 12px', color: '#3c1f6b', fontSize: '1rem' }}>Historial completo</h3>
           <div className="tabla-wrap">
             <table className="tabla-crud">
               <thead><tr><th>Fecha</th><th>Acción</th><th>Detalle</th><th>Responsable</th></tr></thead>
@@ -236,10 +236,10 @@ export default function EmpresaDetalle({ tenantId, onVolver, onCambio }) {
   )
 }
 
-function BotonVolver({ onVolver }) {
+function BotonVolver({ onVolver, etiqueta }) {
   return (
     <button type="button" className="login-volver-inicio" onClick={onVolver} style={{ marginBottom: 14 }}>
-      <i className="fas fa-arrow-left"></i> Volver a empresas
+      <i className="fas fa-arrow-left"></i> Volver a {etiqueta}
     </button>
   )
 }

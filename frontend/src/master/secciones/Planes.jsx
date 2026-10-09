@@ -139,7 +139,7 @@ export default function Planes() {
         ) : planes.map((p) => (
           <div key={p.id} className="vista-card" style={{ opacity: p.activo ? 1 : 0.6 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: 6 }}>
-              <h3 style={{ margin: 0, color: '#17406d' }}>{p.nombre}</h3>
+              <h3 style={{ margin: 0, color: '#3c1f6b' }}>{p.nombre}</h3>
               <span className={`badge ${p.activo ? 'badge-verde' : 'badge-gris'}`}>{p.activo ? 'Activo' : 'Inactivo'}</span>
             </div>
             <p style={{ fontSize: '1.3rem', fontWeight: 700, margin: '4px 0' }}>

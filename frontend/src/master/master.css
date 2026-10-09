@@ -1,5 +1,29 @@
 /* Estilos propios de la consola master que no cubre vistas.css/App.css. */
 
+/* ======== TEMA DE LA CONSOLA MASTER (morado + dorado) ========
+   La app de cada empresa usa azul marino (#17406d) en todas partes: barra lateral, títulos, botones, tablas.
+   El master reutiliza esos mismos componentes (misma barra lateral, mismos .btn-primary, .tabla-crud...), así
+   que sin esto se vería IDÉNTICO a estar dentro de una empresa — justo lo peligroso de confundir cuando se
+   "Entra a ver/editar" un tenant. Estas reglas, todas bajo .master-shell, cambian solo el color: nunca el
+   tamaño, espaciado ni estructura de los componentes que ya existen. */
+.master-shell .menu-lateral { background: #3c1f6b; }
+.master-shell .menu-lateral .item-menu i { color: #cbb2f0; }
+.master-shell .menu-lateral .item-menu.activo,
+.master-shell .menu-lateral .item-menu:hover {
+  background: #4f2a8a;
+  border-left-color: #f0ad2e;
+}
+.master-shell .menu-lateral .item-menu.activo i,
+.master-shell .menu-lateral .item-menu:hover i { color: #f0ad2e; }
+.master-shell .topbar-movil { background: #3c1f6b; }
+.master-shell .vista-titulo { color: #3c1f6b; }
+.master-shell .vista-titulo i { color: #8a4fd6; }
+.master-shell .btn-primary { background: #3c1f6b; }
+.master-shell .btn-primary:hover { background: #4f2a8a; }
+.master-shell .tabla-crud thead th { background: #3c1f6b; }
+.master-shell .modal-header h3 { color: #3c1f6b; }
+.master-shell .login-volver-inicio:hover { color: #3c1f6b; }
+
 .btn-mini {
   background: #eef4fb;
   border: none;
@@ -35,8 +59,8 @@
   align-items: center;
   gap: 6px;
 }
-.master-pestana:hover { color: #17406d; }
-.master-pestana.activa { color: #17406d; border-bottom-color: #1555a5; }
+.master-pestana:hover { color: #3c1f6b; }
+.master-pestana.activa { color: #3c1f6b; border-bottom-color: #f0ad2e; }
 
 @media (max-width: 720px) {
   .master-pestana span { display: none; }

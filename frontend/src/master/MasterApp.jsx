@@ -11,6 +11,10 @@ import Pagos from './secciones/Pagos'
 import CambiosPlan from './secciones/CambiosPlan'
 import './master.css'
 
+const ETIQUETA_SECCION = {
+  dashboard: 'Dashboard', empresas: 'empresas', planes: 'planes', pagos: 'Pagos', 'cambios-plan': 'Cambios de plan',
+}
+
 export default function MasterApp() {
   const [master, setMaster] = useState(() => {
     const guardado = localStorage.getItem('master')
@@ -54,6 +58,7 @@ export default function MasterApp() {
         <EmpresaDetalle
           tenantId={tenantAbierto}
           onVolver={() => { setTenantAbierto(null); setSeccion(volverA) }}
+          volverALabel={ETIQUETA_SECCION[volverA] || 'empresas'}
         />
       ) : secciones[seccion]}
     </MasterLayout>

@@ -24,7 +24,10 @@ export default function MasterLayout({ seccionActiva, onCambiarSeccion, master, 
   }
 
   return (
-    <div className="contenedor-app">
+    // "master-shell" le da a toda la consola una paleta distinta (morado/dorado en vez del azul marino de la
+    // app de cada empresa) para que nunca se confunda estar administrando la plataforma con estar dentro del
+    // perfil de un tenant — sobre todo al volver de "Entrar a ver/editar" una empresa. Ver master.css.
+    <div className="contenedor-app master-shell">
       <nav className={`menu-lateral${menuAbierto ? ' activo' : ''}`}>
         <div className="logo-menu">
           <img src="/logo.svg" alt="Logo" />

@@ -20,7 +20,7 @@ function Tarjeta({ icono, color, etiqueta, valor, nota }) {
       </div>
       <div>
         <div style={{ fontSize: '0.78rem', color: '#778', textTransform: 'uppercase', letterSpacing: '.03em' }}>{etiqueta}</div>
-        <div style={{ fontSize: '1.4rem', fontWeight: 700, color: '#17406d' }}>{valor}</div>
+        <div style={{ fontSize: '1.4rem', fontWeight: 700, color: '#3c1f6b' }}>{valor}</div>
         {nota && <div style={{ fontSize: '0.78rem', color: '#99a' }}>{nota}</div>}
       </div>
     </div>
@@ -46,7 +46,7 @@ export default function Dashboard({ onAbrirEmpresa }) {
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 14, marginBottom: 24 }}>
-        <Tarjeta icono="fa-solid fa-building" color="#17406d" etiqueta="Empresas" valor={d.empresas.total}
+        <Tarjeta icono="fa-solid fa-building" color="#3c1f6b" etiqueta="Empresas" valor={d.empresas.total}
           nota={`+${d.nuevas_este_mes} este mes`} />
         <Tarjeta icono="fa-solid fa-sack-dollar" color="#1a7a45" etiqueta="MRR (ingreso mensual)" valor={dinero(d.ingresos.mrr)}
           nota={`${d.ingresos.empresas_de_pago} empresa(s) de pago`} />
@@ -60,7 +60,7 @@ export default function Dashboard({ onAbrirEmpresa }) {
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18 }} className="form-grid">
         <div className="vista-card">
-          <h3 style={{ margin: '0 0 12px', color: '#17406d', fontSize: '1rem' }}>
+          <h3 style={{ margin: '0 0 12px', color: '#3c1f6b', fontSize: '1rem' }}>
             <i className="fas fa-triangle-exclamation" style={{ color: '#a05e00', marginRight: 6 }}></i>
             Por vencer en los próximos 7 días
           </h3>
@@ -83,8 +83,8 @@ export default function Dashboard({ onAbrirEmpresa }) {
         </div>
 
         <div className="vista-card">
-          <h3 style={{ margin: '0 0 12px', color: '#17406d', fontSize: '1rem' }}>
-            <i className="fas fa-clock-rotate-left" style={{ color: '#17406d', marginRight: 6 }}></i>
+          <h3 style={{ margin: '0 0 12px', color: '#3c1f6b', fontSize: '1rem' }}>
+            <i className="fas fa-clock-rotate-left" style={{ color: '#3c1f6b', marginRight: 6 }}></i>
             Últimas empresas registradas
           </h3>
           <table className="tabla-crud">
@@ -104,7 +104,7 @@ export default function Dashboard({ onAbrirEmpresa }) {
       </div>
 
       <div style={{ marginTop: 18 }}>
-        <h3 style={{ margin: '0 0 12px', color: '#17406d', fontSize: '1rem' }}>Empresas por estado</h3>
+        <h3 style={{ margin: '0 0 12px', color: '#3c1f6b', fontSize: '1rem' }}>Empresas por estado</h3>
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
           {Object.entries(d.empresas.porEstado).map(([estado, cantidad]) => (
             <span key={estado} className="badge badge-azul" style={{ fontSize: '0.85rem' }}>

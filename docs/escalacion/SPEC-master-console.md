@@ -7,6 +7,8 @@
 > repositorio (TDD, nombres en español, servicios que reciben `db`/`conn`, claves JWT derivadas como en
 > `services/tenants/registro.js`). Estado: implementado y probado el 2026-09-28 por Ransli García (kit
 > construido en un worktree aparte; se sube al repo por su cuenta, en los commits que indica `LEEME.md`).
+> **Ampliado el 2026-10-09**: la consola pasó de ser login + tabla + un modal pequeño a un panel de
+> administración completo — ver "Diseño visual" y la "Project Structure" actualizada más abajo.
 
 ## Objective
 
@@ -47,6 +49,23 @@ negocio de suscripción (cambiar plan, pagar, suspender...) la reutiliza tal cua
   la app de empresa por el **fragmento** de la URL (`#impersonar=<token>`), nunca por `?query`, para que no
   quede en ningún log de servidor ni en el `Referer`.
 
+## Diseño visual
+
+La consola reutiliza los mismos componentes visuales que la app de cada empresa (barra lateral, tablas, tarjetas,
+botones, pestañas — `App.css`/`vistas.css`), pero **nunca su mismo color**: todo bajo un wrapper `.master-shell`
+(en `MasterLayout.jsx`) que `master.css` sobrescribe con una paleta morado + dorado (`#3c1f6b` / `#f0ad2e`), en
+vez del azul marino (`#17406d`) de la app de empresa.
+
+**Por qué:** sin esto, administrar la plataforma se ve IDÉNTICO a estar dentro del perfil de una empresa —
+confuso en general, y peligroso específicamente al volver de "Entrar a ver/editar" una empresa (impersonación):
+esa acción abre la app de la empresa en una pestaña nueva, en azul marino normal (`AuthContext.jsx` no sabe ni le
+importa que la sesión venga de una impersonación), así que el color de la *consola* es la única señal
+persistente y siempre visible de "este es el master, no una empresa".
+
+No se tocan `App.css` ni `vistas.css`: las reglas de `master.css` son selectores descendientes de
+`.master-shell` (p. ej. `.master-shell .menu-lateral`), así que la app de cada empresa no se ve afectada en
+absoluto. Ver `master.css` para la lista completa de reglas.
+
 ## Tech Stack
 
 Igual que el resto del backend/frontend (Node 22 + Express + MySQL/Knex; React 18 + Vite). Sin dependencias
@@ -64,8 +83,23 @@ backend/routes/master-auth.js              → POST /login, GET /me
 backend/routes/master-empresas.js          → listado, detalle, plan, pagos, estado, impersonar
 backend/scripts/crear-master.js            → alta del primer master (no interactivo)
 backend/tests/master/*.test.js
+backend/services/master/dashboard.js       → métricas globales de la plataforma
+backend/services/master/planes.js          → CRUD del catálogo de planes (crear/editar/activar/desactivar)
+backend/services/master/pagos.js           → ledger de pagos y bitácora de cambios de plan, globales
+backend/routes/master-dashboard.js         → GET /dashboard
+backend/routes/master-planes.js            → GET/POST /planes, PUT /planes/:id, POST /planes/:id/activo
+backend/routes/master-pagos.js             → GET /pagos[?tenant_id], GET /pagos/cambios-plan[?tenant_id]
 frontend/src/master/masterApi.js           → cliente API del realm master (localStorage aparte)
-frontend/src/master/MasterApp.jsx          → login + tabla de empresas + detalle
+frontend/src/master/MasterApp.jsx          → enruta entre secciones (estado local) y qué empresa está abierta
+frontend/src/master/MasterLayout.jsx       → barra lateral + layout; aplica el tema visual (ver "Diseño visual")
+frontend/src/master/master.css             → estilos propios + tema de color del master
+frontend/src/master/secciones/Login.jsx
+frontend/src/master/secciones/Dashboard.jsx      → métricas, por vencer, últimas empresas
+frontend/src/master/secciones/Empresas.jsx       → listado (antes vivía dentro de MasterApp.jsx)
+frontend/src/master/secciones/EmpresaDetalle.jsx → página completa (antes modal): pestañas Resumen/Pagos/Historial
+frontend/src/master/secciones/Planes.jsx         → CRUD de planes
+frontend/src/master/secciones/Pagos.jsx          → ledger global + registrar pago a cualquier empresa desde aquí
+frontend/src/master/secciones/CambiosPlan.jsx    → bitácora global de cambios de plan
 frontend/src/main.jsx                      → (modificado) enruta /master a MasterApp
 frontend/src/context/AuthContext.jsx       → (modificado) adopta #impersonar=<token>
 ```
