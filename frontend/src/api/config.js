@@ -21,8 +21,9 @@ async function request(endpoint, options = {}) {
 
   const data = await res.json()
 
-  // El registro de empresas usa su propio token: un 401 ahí es un mensaje, no un cierre de sesión
-  if (res.status === 401 && !options.sinRedireccion) {
+  // El registro de empresas usa su propio token, y un login fallido no cierra ninguna sesión (no había
+  // ninguna abierta): en ambos casos un 401 es un mensaje para mostrar, no un cierre de sesión.
+  if (res.status === 401 && endpoint !== '/auth/login' && !options.sinRedireccion) {
     localStorage.removeItem('token')
     localStorage.removeItem('usuario')
     window.location.href = '/'
