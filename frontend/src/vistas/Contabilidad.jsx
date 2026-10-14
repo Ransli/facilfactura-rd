@@ -157,8 +157,10 @@ function Gastos({ puedeEditar, mostrar }) {
                 <td>{g.origen}</td>
                 {puedeEditar && (
                   <td>
-                    <button className="btn-mini" onClick={() => abrirEditar(g)}><i className="fas fa-pen"></i></button>
-                    <button className="btn-mini" onClick={() => setModalAnular(g)}><i className="fas fa-ban"></i></button>
+                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                      <button className="btn-mini" title="Editar" onClick={() => abrirEditar(g)}><i className="fas fa-pen"></i></button>
+                      <button className="btn-mini" title="Anular" onClick={() => setModalAnular(g)}><i className="fas fa-ban"></i></button>
+                    </div>
                   </td>
                 )}
               </tr>
@@ -364,8 +366,8 @@ function EcfRecibidos({ puedeEditar, mostrar }) {
   return (
     <>
       {puedeEditar && (
-        <form onSubmit={subirXml} style={{ marginBottom: 16 }}>
-          <div className="form-grupo">
+        <form onSubmit={subirXml} style={{ marginBottom: 24 }}>
+          <div className="form-grupo" style={{ marginBottom: 12 }}>
             <label>Pegar el XML del e-CF recibido de un proveedor</label>
             <textarea rows={4} style={{ width: '100%' }} value={xml} onChange={(e) => setXml(e.target.value)} placeholder="<ECF>...</ECF>" />
           </div>
@@ -386,10 +388,13 @@ function EcfRecibidos({ puedeEditar, mostrar }) {
                 {puedeEditar && (
                   <td>
                     {r.estado === 'pendiente' && (
-                      <>
-                        <button className="btn-mini" onClick={() => abrirAprobar(r)}>Aprobar</button>
-                        <button className="btn-mini" onClick={() => rechazar(r)}>Rechazar</button>
-                      </>
+                      // btn-mini está pensado para botones de solo ícono (30x30px, definido en master.css,
+                      // cargado globalmente): con texto como "Aprobar"/"Rechazar" el texto se desborda de esa
+                      // caja fija. btn-secondary no choca con eso; se achica para que quepa en la celda.
+                      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                        <button className="btn-secondary" style={{ padding: '4px 10px', fontSize: '0.82rem' }} onClick={() => abrirAprobar(r)}>Aprobar</button>
+                        <button className="btn-secondary" style={{ padding: '4px 10px', fontSize: '0.82rem' }} onClick={() => rechazar(r)}>Rechazar</button>
+                      </div>
                     )}
                   </td>
                 )}
