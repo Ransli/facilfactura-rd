@@ -142,7 +142,11 @@ function Gastos({ puedeEditar, mostrar }) {
 
   return (
     <>
-      {puedeEditar && <button className="btn-primary" onClick={abrirNuevo}>+ Nuevo gasto</button>}
+      {puedeEditar && (
+        <div style={{ marginBottom: 16 }}>
+          <button className="btn-primary" onClick={abrirNuevo}>+ Nuevo gasto</button>
+        </div>
+      )}
       {cargando ? <p>Cargando…</p> : (
         <table className="tabla-crud">
           <thead><tr><th>Fecha</th><th>Proveedor</th><th>NCF</th><th>Categoría 606</th><th>Total</th><th>Origen</th>{puedeEditar && <th>Acciones</th>}</tr></thead>
