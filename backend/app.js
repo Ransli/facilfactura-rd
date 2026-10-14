@@ -1,10 +1,10 @@
-﻿import express from 'express'
+import express from 'express'
 import cors from 'cors'
 import dotenv from 'dotenv'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
-// â”€â”€ Rutas â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// -- Rutas -----------------------------------------------------
 import authRoutes from './routes/auth.js'
 import clientesRoutes from './routes/clientes.js'
 import categoriasRoutes from './routes/categorias.js'
@@ -38,9 +38,9 @@ const __dirname  = path.dirname(__filename)
 
 const app  = express()
 
-// â”€â”€ Middlewares globales â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// En producciÃ³n, nginx sirve el frontend y reenvÃ­a /api al mismo dominio: las peticiones del navegador son del
-// mismo origen y CORS ni interviene. Esta lista es para cuando SÃ hay un origen distinto (otro dominio, o probar
+// -- Middlewares globales --------------------------------------
+// En producción, nginx sirve el frontend y reenvía /api al mismo dominio: las peticiones del navegador son del
+// mismo origen y CORS ni interviene. Esta lista es para cuando sí hay un origen distinto (otro dominio, o probar
 // el frontend de Vite contra un backend remoto). CORS_ORIGIN admite varios separados por coma.
 const origenesPermitidos = (process.env.CORS_ORIGIN || 'http://localhost:5175').split(',').map((o) => o.trim())
 app.use(cors({
@@ -51,10 +51,10 @@ app.use(cors({
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
-// Archivos estÃ¡ticos: uploads
+// Archivos estáticos: uploads
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')))
 
-// â”€â”€ Rutas API â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// -- Rutas API -------------------------------------------------
 app.use('/api/auth', authRoutes)
 app.use('/api/clientes', clientesRoutes)
 app.use('/api/categorias', categoriasRoutes)
@@ -81,7 +81,7 @@ app.use('/api/contabilidad/reportes', reportesRoutes)
 app.use('/api/contabilidad/retenciones', retencionesRoutes)
 app.use('/api/contabilidad/ecf-recibidos', ecfRecibidosRoutes)
 
-// â”€â”€ Health check â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// -- Health check ----------------------------------------------
 app.get('/api/health', (_req, res) => {
   res.json({ 
     status: 'ok', 
@@ -89,7 +89,7 @@ app.get('/api/health', (_req, res) => {
   })
 })
 
-// â”€â”€ Manejo de errores global â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// -- Manejo de errores global ----------------------------------
 app.use((err, _req, res, _next) => {
   console.error(err.stack)
   res.status(err.status || 500).json({
@@ -99,4 +99,3 @@ app.use((err, _req, res, _next) => {
 })
 
 export default app
-
