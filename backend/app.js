@@ -1,10 +1,10 @@
-import express from 'express'
+﻿import express from 'express'
 import cors from 'cors'
 import dotenv from 'dotenv'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
-// ── Rutas ─────────────────────────────────────────────────────
+// â”€â”€ Rutas â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 import authRoutes from './routes/auth.js'
 import clientesRoutes from './routes/clientes.js'
 import categoriasRoutes from './routes/categorias.js'
@@ -26,6 +26,10 @@ import masterEmpresasRoutes from './routes/master-empresas.js'
 import masterPlanesRoutes from './routes/master-planes.js'
 import masterDashboardRoutes from './routes/master-dashboard.js'
 import masterPagosRoutes from './routes/master-pagos.js'
+import gastosRoutes from './routes/contabilidad/gastos.js'
+import reportesRoutes from './routes/contabilidad/reportes.js'
+import retencionesRoutes from './routes/contabilidad/retenciones.js'
+import ecfRecibidosRoutes from './routes/contabilidad/ecf-recibidos.js'
 
 dotenv.config()
 
@@ -34,9 +38,9 @@ const __dirname  = path.dirname(__filename)
 
 const app  = express()
 
-// ── Middlewares globales ──────────────────────────────────────
-// En producción, nginx sirve el frontend y reenvía /api al mismo dominio: las peticiones del navegador son del
-// mismo origen y CORS ni interviene. Esta lista es para cuando SÍ hay un origen distinto (otro dominio, o probar
+// â”€â”€ Middlewares globales â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// En producciÃ³n, nginx sirve el frontend y reenvÃ­a /api al mismo dominio: las peticiones del navegador son del
+// mismo origen y CORS ni interviene. Esta lista es para cuando SÃ hay un origen distinto (otro dominio, o probar
 // el frontend de Vite contra un backend remoto). CORS_ORIGIN admite varios separados por coma.
 const origenesPermitidos = (process.env.CORS_ORIGIN || 'http://localhost:5175').split(',').map((o) => o.trim())
 app.use(cors({
@@ -47,10 +51,10 @@ app.use(cors({
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
-// Archivos estáticos: uploads
+// Archivos estÃ¡ticos: uploads
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')))
 
-// ── Rutas API ─────────────────────────────────────────────────
+// â”€â”€ Rutas API â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 app.use('/api/auth', authRoutes)
 app.use('/api/clientes', clientesRoutes)
 app.use('/api/categorias', categoriasRoutes)
@@ -72,8 +76,12 @@ app.use('/api/master/empresas', masterEmpresasRoutes)
 app.use('/api/master/planes', masterPlanesRoutes)
 app.use('/api/master/dashboard', masterDashboardRoutes)
 app.use('/api/master/pagos', masterPagosRoutes)
+app.use('/api/contabilidad/gastos', gastosRoutes)
+app.use('/api/contabilidad/reportes', reportesRoutes)
+app.use('/api/contabilidad/retenciones', retencionesRoutes)
+app.use('/api/contabilidad/ecf-recibidos', ecfRecibidosRoutes)
 
-// ── Health check ──────────────────────────────────────────────
+// â”€â”€ Health check â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 app.get('/api/health', (_req, res) => {
   res.json({ 
     status: 'ok', 
@@ -81,7 +89,7 @@ app.get('/api/health', (_req, res) => {
   })
 })
 
-// ── Manejo de errores global ──────────────────────────────────
+// â”€â”€ Manejo de errores global â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 app.use((err, _req, res, _next) => {
   console.error(err.stack)
   res.status(err.status || 500).json({
@@ -91,3 +99,4 @@ app.use((err, _req, res, _next) => {
 })
 
 export default app
+
