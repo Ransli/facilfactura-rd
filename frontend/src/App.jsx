@@ -10,6 +10,7 @@ import ECF from './vistas/ECF'
 import Historial from './vistas/Historial'
 import Configuracion from './vistas/Configuracion'
 import Usuarios from './vistas/Usuarios'
+import Contabilidad from './vistas/Contabilidad'
 import Login from './vistas/Login'
 import Registro from './vistas/Registro'
 import Landing from './vistas/Landing'
@@ -24,6 +25,7 @@ const VISTAS = {
   nfc:           NFC,
   ecf:           ECF,
   historial:     Historial,
+  contabilidad:  Contabilidad,
   configuracion: Configuracion,
   usuarios:      Usuarios,
 }
