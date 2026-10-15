@@ -1,50 +1,73 @@
 # FácilFactura RD
 
-Sistema de facturación electrónica con soporte de Números de Comprobante Fiscal (NCF)
-conforme a los lineamientos de la DGII de la República Dominicana.
+Plataforma SaaS multi-tenant de facturación electrónica (e-CF) con soporte de Números de
+Comprobante Fiscal (NCF), conforme a los lineamientos de la DGII de la República Dominicana.
+Nació en Seminario de Proyecto I como un sistema de una sola empresa, y en Seminario de
+Proyecto II escaló a una sola instalación que da servicio a muchas empresas, cada una aislada
+de las demás, con suscripción, firma y emisión de comprobantes fiscales electrónicos, y
+contabilidad con los formatos de la DGII.
+
+**En producción:** https://facturacion.financecore.com.do
 
 ## Descripción
 
 FácilFactura RD es una aplicación web full-stack orientada a PYMEs dominicanas que
-requieren emitir facturas con NCF válidos ante la DGII. El sistema permite gestionar
-clientes, artículos, secuencias NCF y emitir facturas con cálculo automático de ITBIS,
-retenciones e ISR.
+requieren emitir facturas con NCF válidos ante la DGII. Cada empresa suscrita gestiona sus
+propios clientes, artículos, secuencias NCF y facturas, con cálculo automático de ITBIS,
+retenciones e ISR, y puede emitir comprobantes fiscales electrónicos (e-CF) firmados y
+transmitidos directamente a la DGII. Un equipo de plataforma administra todas las empresas
+suscritas desde una consola master separada.
 
 ## Objetivo
 
 Automatizar y simplificar el proceso de facturación de las pequeñas y medianas empresas
 dominicanas, reduciendo los errores humanos en el cálculo de impuestos, garantizando el
-cumplimiento de la normativa fiscal de la DGII en materia de NCF, ITBIS y retenciones, y
-brindando visibilidad financiera en tiempo real mediante un panel de indicadores.
+cumplimiento de la normativa fiscal de la DGII en materia de NCF, ITBIS, retenciones y
+comprobación fiscal electrónica (Ley 32-23), y ofreciéndolo como un servicio por suscripción
+para que ninguna empresa tenga que instalar ni mantener nada propio.
 
 A diferencia de las alternativas comerciales del mercado, el sistema se despliega en la
-infraestructura propia de la empresa y no genera costos de licencia recurrentes: todo el
+infraestructura propia del equipo y no genera costos de licencia recurrentes: todo el
 stack tecnológico es de código abierto.
 
 ## Funcionalidades
 
-- **Autenticación JWT** con control de acceso por roles (admin, facturador, visor).
+**Por empresa (tenant):**
+- **Autenticación JWT** con control de acceso por roles (admin, facturador, visor), aislada por empresa.
 - **Gestión de clientes** (personas y empresas) con búsqueda por nombre o RNC.
 - **Catálogo de productos y servicios** con múltiples precios por unidad de medida
   y soporte para artículos con dimensiones (ancho × alto, ej. banners y lonas).
 - **Secuencias NCF**: registro de rangos autorizados por la DGII con **alerta automática**
   cuando la secuencia se acerca a su límite.
-- **Emisión de facturas** con asignación automática del NCF y cálculo de ITBIS,
-  retención de ITBIS y retención de ISR.
-- **Historial de facturas** con filtros por estado, fecha y número/NCF, vista de detalle
-  y anulación.
-- **Configuración**: datos de la empresa emisora, logo, parámetros fiscales y métodos de pago.
-- **Impresión** de la factura y envío rápido por WhatsApp.
-- **Panel de control** con el facturado del mes, el ITBIS acumulado, la evolución de los
-  últimos seis meses y el consumo de cada secuencia NCF.
-- **Autoguardado** de la factura en edición: recargar el navegador no pierde el trabajo,
-  y el borrador no consume número de factura ni NCF.
+- **Emisión de facturas** con asignación automática del NCF, cálculo de ITBIS, retención de
+  ITBIS y retención de ISR, o como **comprobante fiscal electrónico (e-CF 31/32)** firmado
+  (XMLDSig) y transmitido a la DGII, con representación impresa, código QR y cola de reintentos.
+- **Contabilidad**: gastos con retenciones de ITBIS e ISR, formatos DGII 606 a 609 descargables
+  por período, borrador del IT-1, y una bandeja de e-CF recibidos de proveedores que lee el XML
+  y precarga el gasto.
+- **Historial de facturas** con filtros por estado, fecha y número/NCF, vista de detalle y anulación.
+- **Configuración**: datos de la empresa emisora, logo, certificado digital, parámetros fiscales
+  y métodos de pago.
+- **Alta por autoservicio**: una empresa nueva se registra, elige un plan y crea su administrador
+  sin intervención del equipo.
+
+**Consola master (equipo de la plataforma):**
+- Dashboard con métricas globales (empresas por estado, ingreso recurrente, pagos y facturación
+  del mes, próximas a vencer).
+- Gestión de empresas: perfil completo, cambio de plan, suspender/reactivar/cancelar/exentar,
+  registrar pagos, e impersonar una empresa en modo ver (solo lectura) o editar, para soporte.
+- Catálogo de planes (alta, edición, activación) y bitácora de pagos y cambios de plan de toda
+  la plataforma.
+- Paleta de color propia (morado/dorado), distinta de la app de empresa, para no confundir
+  en qué contexto se está trabajando.
 
 ## Tecnologías
 
 **Frontend:** React 18 · Vite · CSS puro
-**Backend:** Node.js · Express · JWT · bcryptjs · Multer · MySQL2
-**Base de datos:** MySQL / MariaDB
+**Backend:** Node.js · Express · JWT · bcryptjs · Multer · MySQL2 · Knex
+**Base de datos:** MySQL / MariaDB (27 tablas, solo por migraciones versionadas)
+**Facturación electrónica:** node-forge (certificados) · xml-crypto (firma XMLDSig) · qrcode
+**Infraestructura:** VPS propio · nginx · PM2 · Let's Encrypt · Cloudflare DNS · GitHub Actions (CI)
 
 ## Estructura del proyecto
 
@@ -198,22 +221,37 @@ Validación y formato automático de RNC (9 dígitos) y cédula (11 dígitos).
 
 ## Escalación a plataforma SaaS (Seminario de Proyecto II)
 
-Este repositorio evoluciona de un sistema de una sola empresa (v1) a una plataforma multi-tenant con
-facturación electrónica (e-CF) y contabilidad. La documentación del trabajo está en `docs/escalacion/`:
-el mapa de capacidades, la especificación de cada módulo y la guía para el equipo. El plan de tareas activo
-está en `tasks/`. Para desplegar la plataforma en un servidor (entorno real o de prueba), ver
-[`docs/DESPLIEGUE.md`](docs/DESPLIEGUE.md).
+Este repositorio evolucionó de un sistema de una sola empresa (v1, Seminario de Proyecto I) a una
+plataforma SaaS multi-tenant con facturación electrónica (e-CF) y contabilidad. La v1
+(`facilfactura_db`) se conserva intacta como evidencia; la plataforma escalada corre sobre una base
+nueva (`facilfactura_saas`), creada siempre por migración.
+
+**Módulos completados y en producción:** `platform-db` (base técnica), `tenancy` (aislamiento
+multi-tenant), `subscription` (planes y suscripción), `onboarding` (alta de empresas autoservicio),
+`master-console` (administración de la plataforma), `ecf-signing` y `ecf-connector` (certificado
+digital, firma y emisión de e-CF 31/32/34), `accounting` (contabilidad y reportes DGII 606-609) y
+`ecf-receiver` (bandeja de e-CF recibidos de proveedores). Respaldado por **536 pruebas
+automatizadas** (`npm test --prefix backend`) y una integración continua (GitHub Actions) que corre
+esa misma suite y la compilación del frontend en cada push.
+
+**Trabajo futuro:** escáner de facturas de gasto por OCR (`expense-scanner`) y la certificación real
+de la plataforma ante la DGII (trámite externo, fuera del alcance de este curso).
+
+La documentación completa del trabajo de escalación está en `docs/escalacion/`: el mapa de
+capacidades, la especificación técnica de cada módulo (`SPEC-*.md`) y la guía de integración. Para
+desplegar la plataforma en un servidor, ver [`docs/DESPLIEGUE.md`](docs/DESPLIEGUE.md).
 
 ## Autores
 
-Proyecto desarrollado por el **Grupo I** para la asignatura Seminario de Proyecto I (ISW410),
-Escuela de Ingeniería y Tecnología, Universidad Abierta para Adultos (UAPA).
-Trimestre Mayo–Julio 2026. Facilitador: Ing. Henry Candelario.
+Proyecto iniciado por el **Grupo I** en Seminario de Proyecto I (ISW410), trimestre Mayo–Julio 2026,
+y escalado a plataforma SaaS en Seminario de Proyecto II (ISW411), trimestre Agosto–Octubre 2026.
+Escuela de Ingeniería y Tecnología, Universidad Abierta para Adultos (UAPA). Facilitador: Ing. Henry
+Candelario.
 
-| Integrante | Matrícula | Aportes principales |
-|---|---|---|
-| **Ransli Rafael García Amarante** | 100044493 | Arquitectura, base de datos, autenticación, facturación, panel de control e interfaz de usuario |
-| **Carlos Batista** | 100056995 | Módulos de backend: clientes, categorías, unidades de medida, artículos y NCF |
+| Integrante | Matrícula | Aportes en Seminario I | Aportes en Seminario II |
+|---|---|---|---|
+| **Ransli Rafael García Amarante** | 100044493 | Arquitectura, base de datos, autenticación, facturación, panel de control e interfaz de usuario | Arquitectura de la plataforma, base de datos multi-tenant, aislamiento por empresa, suscripción, consola master, firma digital y conector e-CF |
+| **Carlos Batista** | 100056995 | Módulos de backend: clientes, categorías, unidades de medida, artículos y NCF | Contabilidad y reportes DGII (606-609), gastos y retenciones, bandeja de e-CF recibidos |
 
 ## Licencia
 
